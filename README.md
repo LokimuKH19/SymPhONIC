@@ -19,7 +19,7 @@ This repository is a **living** project. The minimal initial files include:
 - `docs/` — design notes, MVP roadmap, and evaluation metrics.
 
 ## License & contribution
-I used GNU 3.0, temporarily. Maybe changed in the future.
+I used GNU 3.0, temporarily. May change in the future.
 
 > SymPhONIC — where symmetry, physics and neural computation resonate in unison.
 
