@@ -22,3 +22,5 @@ This repository is a **living** project. The minimal initial files include:
 I used GNU 3.0, temporarily. Maybe changed in the future.
 
 > SymPhONIC — where symmetry, physics and neural computation resonate in unison.
+
+> Its original name was Symmetric Impeller Sobolev-Underwritten Kinetics Analyzer with Supervised-learning (SISUKAS), but not visual therefore I didn't adopt it.
