@@ -1,5 +1,5 @@
 # 🎵 SymPhONIC
-** Symmetric-based Physics Oriented Neural Integral Computation**
+**Symmetric-based Physics Oriented Neural Integral Computation**
 
 SymPhONIC is a novel FEM-PINN / weak-form deep learning framework dedicated to analyzing impellers and rotating turbomachinery flows 🚁.
 
