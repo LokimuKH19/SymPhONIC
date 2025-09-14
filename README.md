@@ -23,4 +23,4 @@ I used GNU 3.0, temporarily. May change in the future.
 
 > SymPhONIC — where symmetry, physics and neural computation resonate in unison.
 
-> Its original name was Symmetric Impeller Sobolev-Underwritten Kinetics Analyzer with Supervised-learning (SISUKAS), but not visual therefore I didn't adopt it.
+> Its original name was Symmetric Impeller Sobolev-Underwritten Kinetics Analyzer with Supervisory (SISUKAS), maybe used in later system?
