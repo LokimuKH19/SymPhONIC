@@ -26,9 +26,9 @@ We implemented three models to learn the PDE solution from a small dataset (50 t
 
 | Model | Physics Residual MSE (final) |
 |-------|-----------------------------|
-| FNO   | 1e-8                        |
-| CNN   | 2e-5                         |
-| MLP   | 1e-4                         |
+| FNO   | ~1e-8                        |
+| CNN   | ~1e-5                         |
+| MLP   | ~1e-4                         |
 
 **Observation:**  
 - **FNO outperforms CNN and MLP by several orders of magnitude**, even with limited data.  
