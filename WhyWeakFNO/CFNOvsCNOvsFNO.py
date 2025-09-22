@@ -29,13 +29,14 @@ seed_everything(seed=114514)
 
 
 # -------------------------
-# DCT/IDCT (DCT-II / DCT-III) 1D and separable 2D implementations
-# (same as earlier, batch + multi-dim friendly, differentiable)
+# DCT/IDCT (DCT-II / DCT-III) 1D and separable 2D implementations, this aims to use fft in chebyshev expansion
+# thus we applied the 1st-type Chebyshev polynomials, Tk(x) = cos(k arccos x),
+# and it can be writtin in the Discrete Cosine Transform(DCT).
 # -------------------------
 def dct_1d(x):
     # x: (..., N), real
     N = x.shape[-1]
-    v = torch.cat([x, x.flip(-1)], dim=-1)  # (..., 2N)
+    v = torch.cat([x, x.flip(-1)], dim=-1)  # (..., 2N)s
     V = torch.fft.fft(v, dim=-1)
     k = torch.arange(N, device=x.device, dtype=x.dtype)
     exp_factor = torch.exp(-1j * math.pi * k / (2 * N))
