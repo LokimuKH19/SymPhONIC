@@ -24,7 +24,7 @@ We implemented three models to learn the PDE solution from a small dataset (50 t
 
 **Results:**  
 
-| Model | Physics Residual MSE (final) |
+| Model |  Residual MSE |
 |-------|-----------------------------|
 | FNO   | ~1e-8                        |
 | CNN   | ~1e-5                         |
@@ -51,9 +51,9 @@ We introduced **`num_elements`**, which controls the number of points in each ba
 
 **Findings:**
 
-| `num_elements` | Residual MSE (final) |
+| `num_elements` | Residual MSE |
 |----------------|--------------------|
-| 0              | ~1e-4               |
+| 0              | ~1e-5               |
 | 1              | ~1e-8               |
 | 50             | ~1e-8               |
 
@@ -92,8 +92,16 @@ The governing 2D Burgers’ equations:
 u\frac{\partial v}{\partial x} + v\frac{\partial v}{\partial y} = \nu \left(\frac{\partial^2 v}{\partial x^2}+\frac{\partial^2 v}{\partial y^2}\right)
 ```
 
-with viscosity `ν` and appropriate boundary conditions.  
+with viscosity `ν=0.01` and appropriate boundary conditions.  
 Weak-form residuals are computed via integration against test functions `phi_u`, `phi_v`, while strong-form residuals are evaluated at selected points.
+As for the boundary conditions, this filefolder's primary focus is on the **model's ability to converge to the steady-state solution**, rather than strictly enforcing physical boundary conditions. Therefore, we did not explicitly impose Dirichlet or Neumann boundary conditions.  
+
+- For smooth, low-frequency Burgers’ flows, the networks are still able to learn globally smooth solutions.  
+- Not setting boundary conditions allows the model to explore trivial or globally minimal-residual solutions, which is sufficient for comparing the convergence performance of FNO, CNN, and MLP.  
+- This setup simplifies the training process while demonstrating the **advantage of FNO in capturing global frequency modes**.  
+
+> For future applications to real engineering flows or complex geometries, hard boundary constraints or physical boundary conditions can be introduced to improve the accuracy of the physical solution.
+
 
 ---
 
