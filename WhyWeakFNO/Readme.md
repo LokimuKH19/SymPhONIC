@@ -1,6 +1,6 @@
 # ❓ Why SymPhONIC Chooses Weak-FNO as Its Solver
 
-In SymPhONIC, our goal is to efficiently and accurately 3D fluid flow problems in an impeller with complex, parametric blade design, such as those found in an MCP in the Nuclear Reactor, while leveraging deep learning techniques. To determine the optimal neural solver, we conducted several comparative experiments using a 2D Burgers’ flow as a representative test case. Here, we summarize our findings.
+In SymPhONIC, our goal is to efficiently and accurately 3D fluid flow problems in an impeller with complex, parametric blade design, such as those found in an MCP in the Nuclear Reactor, while leveraging deep learning techniques. To determine the optimal neural solver, we conducted several comparative experiments using a steady-state 2D Burgers’ flow as a representative test case. Here, we summarize our findings.
 
 ---
 
@@ -81,15 +81,15 @@ Based on the experiments above:
 
 ---
 
-### 4️⃣ Mathematical Formulation (2D Burgers’ Flow)
+### 4️⃣ Mathematical Formulation (Steady-state 2D Burgers’ Flow)
 
 The governing 2D Burgers’ equations:
 
 ```math
-  \frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x} + v\frac{\partial u}{\partial y} = \nu \left(\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial y^2}\right)
+ u\frac{\partial u}{\partial x} + v\frac{\partial u}{\partial y} = \nu \left(\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial y^2}\right)
 ```
 ```math
-  \frac{\partial v}{\partial t} + u\frac{\partial v}{\partial x} + v\frac{\partial v}{\partial y} = \nu \left(\frac{\partial^2 v}{\partial x^2}+\frac{\partial^2 v}{\partial y^2}\right)
+u\frac{\partial v}{\partial x} + v\frac{\partial v}{\partial y} = \nu \left(\frac{\partial^2 v}{\partial x^2}+\frac{\partial^2 v}{\partial y^2}\right)
 ```
 
 with viscosity `ν` and appropriate boundary conditions.  
