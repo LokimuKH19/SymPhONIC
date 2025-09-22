@@ -19,8 +19,8 @@ def generate_data(num_samples=100, grid_size=64):
         v0 = np.cos(np.pi * X) * np.cos(np.pi * Y) * np.random.rand()
         data_u.append(u0)
         data_v.append(v0)
-    data_u = torch.tensor(data_u, dtype=torch.float32)
-    data_v = torch.tensor(data_v, dtype=torch.float32)
+    data_u = torch.tensor(np.array(data_u), dtype=torch.float32)
+    data_v = torch.tensor(np.array(data_u), dtype=torch.float32)
     return data_u.unsqueeze(1), data_v.unsqueeze(1)  # [N,1,H,W]
 
 
@@ -170,8 +170,8 @@ def burgers_residual(u, v, dx=1/64, dy=1/64, nu=0.01):
     v_y = v_y[:,:, :min_h, :min_w]
     v_yy = v_yy[:,:, :min_h, :min_w]
 
-    r_u = u_x + u_y + nu * (u_xx + u_yy)
-    r_v = v_x + v_y + nu * (v_xx + v_yy)
+    r_u = u_x + u_y - nu * (u_xx + u_yy)
+    r_v = v_x + v_y - nu * (v_xx + v_yy)
 
     return r_u, r_v
 

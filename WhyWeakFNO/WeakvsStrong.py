@@ -112,8 +112,8 @@ def burgers_weak_residual(u, v, phi_u, phi_v, dx=1/64, dy=1/64, nu=0.01):
     convection_u = ((u_c*u_x_c + v_c*u_y_c)*phi_u_c).mean()
     convection_v = ((u_c*v_x_c + v_c*v_y_c)*phi_v_c).mean()
 
-    loss_u = diffusion_u + convection_u
-    loss_v = diffusion_v + convection_v
+    loss_u = convection_u - diffusion_u
+    loss_v = convection_v - diffusion_v
 
     return loss_u, loss_v
 
@@ -143,8 +143,8 @@ def burgers_strong_residual(u, v, dx=1/64, dy=1/64, nu=0.01):
     v_y = v_y[:,:, :min_h, :min_w]
     v_yy = v_yy[:,:, :min_h, :min_w]
 
-    r_u = u_x + u_y + nu * (u_xx + u_yy)
-    r_v = v_x + v_y + nu * (v_xx + v_yy)
+    r_u = u_x + u_y - nu * (u_xx + u_yy)
+    r_v = v_x + v_y - nu * (v_xx + v_yy)
 
     return r_u, r_v
 
