@@ -94,7 +94,7 @@ u\frac{\partial v}{\partial x} + v\frac{\partial v}{\partial y} = \nu \left(\fra
 
 with viscosity `ν=0.01` and appropriate boundary conditions.  
 Weak-form residuals are computed via integration against test functions `phi_u`, `phi_v`, while strong-form residuals are evaluated at selected points.
-As for the boundary conditions, this filefolder's primary focus is on the **model's ability to converge to the steady-state solution**, rather than strictly enforcing physical boundary conditions. Therefore, we did not explicitly impose Dirichlet or Neumann boundary conditions.  
+As for the boundary conditions, this filefolder's primary focus is on the **model's theoretical limit ability to converge to the steady-state solution**, rather than strictly enforcing physical boundary conditions. Therefore, we did not explicitly impose Dirichlet or Neumann boundary conditions.  Trival solution
 
 - For smooth, low-frequency Burgers’ flows, the networks are still able to learn globally smooth solutions.  
 - Not setting boundary conditions allows the model to explore trivial or globally minimal-residual solutions, which is sufficient for comparing the convergence performance of FNO, CNN, and MLP.  
@@ -112,3 +112,7 @@ As for the boundary conditions, this filefolder's primary focus is on the **mode
 - SymPhONIC adopts **Weak-FNO** as the default solver for efficient, high-fidelity turbomachinery flow predictions.  
 
 > In short: minimal strong-point anchoring + global spectral representation = high efficiency and accuracy.
+
+### Performance Comparison on a non-trival case:
+See the new experiment in `FNOvsCNNvsDNNwithBoundary`, 2d-steady state Burger's Flow in a channel.
+![non-trival](boundary.png)
