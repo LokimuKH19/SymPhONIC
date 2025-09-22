@@ -123,7 +123,7 @@ See the new experiment in `FNOvsCNNvsDNNwithBoundary`, 2d-steady state Burger's 
 
 `CFNOvsCNOvsFNO.py`:
 
-In this program the function is expanded through Chebyshev series, defined in its triangle form:
+In this program the function is expanded through 1st Chebyshev Polinomials, defined in its triangle form:
 
 ```math
   T_k(x) = \rm{cos} \left(k \rm{arccos} x \right), x\in R, k\in Z_+
