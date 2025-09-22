@@ -114,5 +114,5 @@ As for the boundary conditions, this filefolder's primary focus is on the **mode
 > In short: minimal strong-point anchoring + global spectral representation = high efficiency and accuracy.
 
 ### Performance Comparison on a non-trival case:
-See the new experiment in `FNOvsCNNvsDNNwithBoundary`, 2d-steady state Burger's Flow in a channel.
+See the new experiment in `FNOvsCNNvsDNNwithBoundary`, 2d-steady state Burger's Flow in a channel. FNO still has obvious advantage during the first 500 epoch of training, showing a faster convergence speed.
 ![non-trival](boundary.png)
