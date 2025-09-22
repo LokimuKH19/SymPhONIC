@@ -118,3 +118,12 @@ See the new experiment in `FNOvsCNNvsDNNwithBoundary`, 2d-steady state Burger's 
 ![non-trival](boundary.png)
 
 > Still, maybe I'll consider corporate structures which can better reserve high frequency features with FNO together in the future.
+
+## Wait... We might found a better approach...
+
+`CFNOvsCNOvsFNO.py`:
+
+Poission Results shows that combining Chebyshev polynomial and Fourier series as neural operator might cause some kind of improvements of the model's performance. However I don't think a linear example is persuasive for **no model does bad at these cases only if the code goes wrong**. 
+![Good Enough?](GroundTruth&ConvergenceCurves.png)
+
+![Well I guess CNFO wins at the seed=114514](Comparison.png)
