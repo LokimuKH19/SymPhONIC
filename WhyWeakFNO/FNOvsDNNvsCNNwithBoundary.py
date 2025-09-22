@@ -96,7 +96,7 @@ class SpectralConv2d(nn.Module):
 
 
 class FNO2d(nn.Module):
-    def __init__(self, modes=12, width=32):
+    def __init__(self, modes=32, width=32):
         super().__init__()
         self.modes = modes
         self.width = width
@@ -227,7 +227,7 @@ optimizer_cnn = torch.optim.Adam(cnn.parameters(), lr=lr)
 
 train_data = torch.cat([train_u, train_v], dim=1).to(device)
 
-epochs = 50
+epochs = 500
 result_fno, result_cnn, result_mlp = [], [], []
 for epoch in range(epochs):
     # ---------------- FNO ----------------
@@ -273,7 +273,7 @@ for epoch in range(epochs):
             f"MLP Loss: {loss_mlp.item():.12f}"
         )
 
-SEED = 10001
+SEED = 10000
 seed_everything(SEED)
 
 plt.title(f"Loss Curve Comparison (LearningRate {lr} RandomSeed {SEED} Burgers Flow in 2d Channel)")
