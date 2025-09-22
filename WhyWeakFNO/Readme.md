@@ -123,6 +123,12 @@ See the new experiment in `FNOvsCNNvsDNNwithBoundary`, 2d-steady state Burger's 
 
 `CFNOvsCNOvsFNO.py`:
 
+In this program the function is expanded through Chebyshev series, defined in its triangle form:
+
+```math
+  T_k(x) = \rm{cos}(k \rm{arccoss}x), x\in\double R, k\in\double Z_+
+```
+
 Poission Results shows that combining Chebyshev polynomial and Fourier series as neural operator might cause some kind of improvements of the model's performance. However I don't think a linear example is persuasive for **no model does bad at these cases only if the code goes wrong**. 
 
 ![Good Enough?](GroundTruth&ConvergenceCurves.png)
