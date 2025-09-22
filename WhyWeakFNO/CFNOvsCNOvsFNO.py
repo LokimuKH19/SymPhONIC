@@ -25,6 +25,9 @@ def seed_everything(seed):
     torch.backends.cudnn.benchmark = False
 
 
+seed_everything(seed=114514)
+
+
 # -------------------------
 # DCT/IDCT (DCT-II / DCT-III) 1D and separable 2D implementations
 # (same as earlier, batch + multi-dim friendly, differentiable)
@@ -244,6 +247,7 @@ class FNO2d_small(nn.Module):
         x = x.permute(0,3,1,2)
         return x
 
+
 # CNO model: use ChebSpectralConv2d blocks instead of Fourier
 class CNO2d_small(nn.Module):
     def __init__(self, cheb_modes=(8,8), width=16, depth=3):
@@ -316,20 +320,21 @@ def solve_poisson_jacobi(f, iters=500, tol=1e-6):
             break
     return u
 
+
 def make_dataset(n_samples=200, H=32, W=32):
-    # create random RHS f with localized sources (sum of gaussians)
+    # create random RHS f with localized sources (sum of gaussians bumps)
     X = []
     Y = []
     for _ in range(n_samples):
         f = torch.zeros(H, W)
         # add a few random gaussian bumps
-        for _ in range(np.random.randint(1,4)):
-            cx = np.random.uniform(0.2,0.8)
-            cy = np.random.uniform(0.2,0.8)
-            sx = np.random.uniform(0.03,0.12)
-            sy = np.random.uniform(0.03,0.12)
-            xv = torch.linspace(0,1,H)
-            yv = torch.linspace(0,1,W)
+        for _ in range(np.random.randint(1, 4)):
+            cx = np.random.uniform(0.2, 0.8)
+            cy = np.random.uniform(0.2, 0.8)
+            sx = np.random.uniform(0.03, 0.12)
+            sy = np.random.uniform(0.03, 0.12)
+            xv = torch.linspace(0, 1, H)
+            yv = torch.linspace(0, 1, W)
             Xg, Yg = torch.meshgrid(xv,yv, indexing='ij')
             g = torch.exp(-((Xg-cx)**2)/(2*sx**2) - ((Yg-cy)**2)/(2*sy**2))
             amp = np.random.uniform(-5,5)
@@ -342,8 +347,10 @@ def make_dataset(n_samples=200, H=32, W=32):
     Y = torch.stack(Y)  # [N,1,H,W]
     return X, Y
 
+
 # generate dataset
-H = W = 32
+H = 32
+W = 32
 n_train = 120
 n_val = 40
 n_test = 40
@@ -400,7 +407,6 @@ def train_model(model, X_train, Y_train, X_val, Y_val, epochs=60, batch_size=8, 
 
 if __name__ == '__main__':
     # -------------------- Instantiate and train three models --------------------
-    seed_everything(seed=114514)
     fno = FNO2d_small(modes=6, width=16, depth=3)
     cno = CNO2d_small(cheb_modes=(8,8), width=16, depth=3)
     cfno = CFNO2d_small(modes=6, cheb_modes=(8, 8), width=16, depth=3)
@@ -469,5 +475,10 @@ if __name__ == '__main__':
     plt.show()
 
     # Report MSEs in a small dict
-    results = {'model':['FNO','CNO','CFNO'], 'mse':[mse_fno, mse_cno, mse_cfno], 'time':[t_fno, t_cno, t_cfno]}
+    results = {'model': ['FNO', 'CNO', 'CFNO'], 'mse': [mse_fno, mse_cno, mse_cfno], 'time': [t_fno, t_cno, t_cfno]}
     print(pd.DataFrame(results))
+
+
+# next plan: 1d case (linear, nonlinear) 2d case (nonlinear)
+# corresponding weak form training strategy
+# (8 cases in total)
