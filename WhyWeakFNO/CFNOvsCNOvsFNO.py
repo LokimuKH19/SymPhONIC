@@ -11,7 +11,11 @@ import pandas as pd
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print("Device:", device)
 
+
 def seed_everything(seed):
+    torch.set_default_dtype(torch.float32)
+    torch.set_printoptions(precision=16)
+    np.set_printoptions(precision=16)
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -19,6 +23,7 @@ def seed_everything(seed):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+
 
 # -------------------------
 # DCT/IDCT (DCT-II / DCT-III) 1D and separable 2D implementations
@@ -35,6 +40,7 @@ def dct_1d(x):
     X[..., 0] *= 0.5
     return X
 
+
 def idct_1d(X):
     # inverse of dct_1d (DCT-III), X: (..., N)
     N = X.shape[-1]
@@ -46,10 +52,11 @@ def idct_1d(X):
     V[..., :N] = (c * exp_factor)
     if N > 1:
         V[..., N+1:] = torch.conj(V[..., 1:N].flip(-1))
-    V[..., N] = 0.0 + 0.0j
+    V[..., N] = torch.tensor(0.0 + 0.0j)
     v = torch.fft.ifft(V, dim=-1)
     x = v[..., :N].real
     return x
+
 
 def dct_2d(x):
     # x: (..., H, W)
@@ -64,6 +71,7 @@ def dct_2d(x):
     y2 = dct_1d(y_perm.reshape(-1, shp[-1])).reshape(shp)
     return y2.permute(*range(y2.dim()-2), y2.dim()-1, y2.dim()-2)
 
+
 def idct_2d(X):
     # inverse 2D: apply idct along -2 then -1 (reverse order)
     X_perm = X.permute(*range(X.dim()-2), X.dim()-1, X.dim()-2)
@@ -72,6 +80,7 @@ def idct_2d(X):
     y = y.permute(*range(y.dim()-2), y.dim()-1, y.dim()-2)
     z = idct_1d(y.reshape(-1, y.shape[-1])).reshape(y.shape)
     return z
+
 
 # -------------------------
 # Chebyshev / Cosine spectral conv (real coefficients)
@@ -174,6 +183,7 @@ class CFNOBlock(nn.Module):
         y_fused = self.fuse(y_cat)
         return y_blend + y_fused
 
+
 # -------------------------
 # CFNO network (example stack)
 # -------------------------
@@ -188,7 +198,7 @@ class CFNO2d(nn.Module):
         self.blocks = nn.ModuleList()
         self.w_convs = nn.ModuleList()
         for _ in range(depth):
-            self.blocks.append(CFNOBlock(width, width, modes, cheb_modes, width))
+            self.blocks.append(CFNOBlock(width, width, modes, cheb_modes))
             self.w_convs.append(nn.Conv2d(width, width, 1))
         self.fc1 = nn.Linear(width, 128)
         self.fc2 = nn.Linear(128, 2)
