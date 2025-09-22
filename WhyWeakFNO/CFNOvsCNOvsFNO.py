@@ -38,7 +38,7 @@ def dct_1d(x):
     v = torch.cat([x, x.flip(-1)], dim=-1)  # (..., 2N)
     V = torch.fft.fft(v, dim=-1)
     k = torch.arange(N, device=x.device, dtype=x.dtype)
-    exp_factor = torch.exp(-1j * math.pi * k / (2*N))
+    exp_factor = torch.exp(-1j * math.pi * k / (2 * N))
     X = (V[..., :N] * exp_factor).real
     X[..., 0] *= 0.5
     return X
@@ -50,11 +50,11 @@ def idct_1d(X):
     c = X.clone()
     c[..., 0] = c[..., 0] * 2.0
     k = torch.arange(N, device=X.device, dtype=X.dtype)
-    exp_factor = torch.exp(1j * math.pi * k / (2*N))
-    V = torch.zeros(X.shape[:-1] + (2*N,), dtype=torch.cfloat, device=X.device)
+    exp_factor = torch.exp(1j * math.pi * k / (2 * N))
+    V = torch.zeros(X.shape[:-1] + (2 * N,), dtype=torch.cfloat, device=X.device)
     V[..., :N] = (c * exp_factor)
     if N > 1:
-        V[..., N+1:] = torch.conj(V[..., 1:N].flip(-1))
+        V[..., N + 1:] = torch.conj(V[..., 1:N].flip(-1))
     V[..., N] = torch.tensor(0.0 + 0.0j)
     v = torch.fft.ifft(V, dim=-1)
     x = v[..., :N].real
@@ -69,18 +69,18 @@ def dct_2d(x):
     x_resh = x.reshape(-1, orig_shape[-1])
     y = dct_1d(x_resh).reshape(*orig_shape)
     # swap last two and apply again
-    y_perm = y.permute(*range(y.dim()-2), y.dim()-1, y.dim()-2)
+    y_perm = y.permute(*range(y.dim() - 2), y.dim() - 1, y.dim() - 2)
     shp = y_perm.shape
     y2 = dct_1d(y_perm.reshape(-1, shp[-1])).reshape(shp)
-    return y2.permute(*range(y2.dim()-2), y2.dim()-1, y2.dim()-2)
+    return y2.permute(*range(y2.dim() - 2), y2.dim() - 1, y2.dim() - 2)
 
 
 def idct_2d(X):
     # inverse 2D: apply idct along -2 then -1 (reverse order)
-    X_perm = X.permute(*range(X.dim()-2), X.dim()-1, X.dim()-2)
+    X_perm = X.permute(*range(X.dim() - 2), X.dim() - 1, X.dim() - 2)
     shp = X_perm.shape
     y = idct_1d(X_perm.reshape(-1, shp[-1])).reshape(shp)
-    y = y.permute(*range(y.dim()-2), y.dim()-1, y.dim()-2)
+    y = y.permute(*range(y.dim() - 2), y.dim() - 1, y.dim() - 2)
     z = idct_1d(y.reshape(-1, y.shape[-1])).reshape(y.shape)
     return z
 
@@ -101,7 +101,8 @@ class ChebSpectralConv2d(nn.Module):
         self.m_h = modes_h
         self.m_w = modes_w
         # real coefficients for Chebyshev/DCT space
-        self.weight = nn.Parameter(torch.randn(in_channels, out_channels, modes_h, modes_w) * (1.0 / (in_channels*out_channels)**0.5))
+        self.weight = nn.Parameter(
+            torch.randn(in_channels, out_channels, modes_h, modes_w) * (1.0 / (in_channels * out_channels) ** 0.5))
 
     def forward(self, x):
         # x: [B, C, H, W] real
@@ -110,7 +111,7 @@ class ChebSpectralConv2d(nn.Module):
         # reshape to (..., H, W) to operate with dct_2d
         x_dct = dct_2d(x)  # shape [B, C, H, W]
         # crop modes (take top-left modes_h x modes_w)
-        x_modes = x_dct[:, :, :self.m_h, :self.m_w]   # [B, C, m_h, m_w]
+        x_modes = x_dct[:, :, :self.m_h, :self.m_w]  # [B, C, m_h, m_w]
         # multiply by real weights: einsum over in_channel
         # out_modes[b, o, i, j] = sum_c x_modes[b, c, i, j] * weight[c, o, i, j]
         out_modes = torch.einsum("b c i j, c o i j -> b o i j", x_modes, self.weight)
@@ -153,7 +154,7 @@ class SpectralConv2d(nn.Module):
 
         # Output a frequency tensor
         out_ft = torch.zeros(
-            B, self.out_channels, H, W//2 + 1,
+            B, self.out_channels, H, W // 2 + 1,
             device=x.device, dtype=torch.cfloat
         )
 
@@ -165,6 +166,7 @@ class SpectralConv2d(nn.Module):
         x_out = torch.fft.irfft2(out_ft, s=(H, W), norm="forward")
         return x_out
 
+
 # -------------------------
 # CFNO block: combine Fourier spectral conv and Chebyshev spectral conv per layer
 # -------------------------
@@ -175,7 +177,7 @@ class CFNOBlock(nn.Module):
         mh, mw = cheb_modes
         self.cheb = ChebSpectralConv2d(in_channels, out_channels, mh, mw)
         self.alpha = nn.Parameter(torch.tensor(0.0))
-        self.fuse = nn.Conv2d(out_channels*2, out_channels, kernel_size=1)
+        self.fuse = nn.Conv2d(out_channels * 2, out_channels, kernel_size=1)
 
     def forward(self, x):
         y_f = self.fourier(x)
@@ -191,7 +193,7 @@ class CFNOBlock(nn.Module):
 # CFNO network (example stack)
 # -------------------------
 class CFNO2d(nn.Module):
-    def __init__(self, modes=12, cheb_modes=(12,12), width=32, depth=4):
+    def __init__(self, modes=12, cheb_modes=(12, 12), width=32, depth=4):
         super().__init__()
         self.width = width
         self.depth = depth
@@ -210,18 +212,19 @@ class CFNO2d(nn.Module):
         # x: [B, 2, H, W]
         B, C, H, W = x.shape
         # lift
-        x = x.permute(0,2,3,1)      # [B, H, W, 2]
-        x = self.fc0(x)             # [B, H, W, width]
-        x = x.permute(0,3,1,2)      # [B, width, H, W]
+        x = x.permute(0, 2, 3, 1)  # [B, H, W, 2]
+        x = self.fc0(x)  # [B, H, W, width]
+        x = x.permute(0, 3, 1, 2)  # [B, width, H, W]
         # stack
         for block, w_conv in zip(self.blocks, self.w_convs):
             y = block(x)
             x = y + w_conv(x)
-        x = x.permute(0,2,3,1)      # [B, H, W, width]
+        x = x.permute(0, 2, 3, 1)  # [B, H, W, width]
         x = torch.relu(self.fc1(x))
-        x = self.fc2(x)             # [B, H, W, 2]
-        x = x.permute(0,3,1,2)      # [B, 2, H, W]
+        x = self.fc2(x)  # [B, H, W, 2]
+        x = x.permute(0, 3, 1, 2)  # [B, 2, H, W]
         return x
+
 
 # -------------------- Networks: FNO, CNO, CFNO --------------------
 class FNO2d_small(nn.Module):
@@ -235,47 +238,48 @@ class FNO2d_small(nn.Module):
 
     def forward(self, x):  # x: [B,1,H,W] source f
         B, C, H, W = x.shape
-        x = x.permute(0,2,3,1)   # [B,H,W,1]
-        x = self.fc0(x)          # [B,H,W,width]
-        x = x.permute(0,3,1,2)   # [B,width,H,W]
+        x = x.permute(0, 2, 3, 1)  # [B,H,W,1]
+        x = self.fc0(x)  # [B,H,W,width]
+        x = x.permute(0, 3, 1, 2)  # [B,width,H,W]
         for blk, w in zip(self.blocks, self.wconvs):
             y = blk(x)
             x = y + w(x)
-        x = x.permute(0,2,3,1)
+        x = x.permute(0, 2, 3, 1)
         x = torch.relu(self.fc1(x))
         x = self.fc2(x)
-        x = x.permute(0,3,1,2)
+        x = x.permute(0, 3, 1, 2)
         return x
 
 
 # CNO model: use ChebSpectralConv2d blocks instead of Fourier
 class CNO2d_small(nn.Module):
-    def __init__(self, cheb_modes=(8,8), width=16, depth=3):
+    def __init__(self, cheb_modes=(8, 8), width=16, depth=3):
         super().__init__()
         self.fc0 = nn.Linear(1, width)
-        self.blocks = nn.ModuleList([ChebSpectralConv2d(width, width, cheb_modes[0], cheb_modes[1]) for _ in range(depth)])
+        self.blocks = nn.ModuleList(
+            [ChebSpectralConv2d(width, width, cheb_modes[0], cheb_modes[1]) for _ in range(depth)])
         self.wconvs = nn.ModuleList([nn.Conv2d(width, width, 1) for _ in range(depth)])
         self.fc1 = nn.Linear(width, 64)
         self.fc2 = nn.Linear(64, 1)
 
     def forward(self, x):
         B, C, H, W = x.shape
-        x = x.permute(0,2,3,1)
+        x = x.permute(0, 2, 3, 1)
         x = self.fc0(x)
-        x = x.permute(0,3,1,2)
+        x = x.permute(0, 3, 1, 2)
         for blk, w in zip(self.blocks, self.wconvs):
             y = blk(x)
             x = y + w(x)
-        x = x.permute(0,2,3,1)
+        x = x.permute(0, 2, 3, 1)
         x = torch.relu(self.fc1(x))
         x = self.fc2(x)
-        x = x.permute(0,3,1,2)
+        x = x.permute(0, 3, 1, 2)
         return x
 
 
 # CFNO combining both
 class CFNO2d_small(nn.Module):
-    def __init__(self, modes=8, cheb_modes=(8,8), width=16, depth=3):
+    def __init__(self, modes=8, cheb_modes=(8, 8), width=16, depth=3):
         super().__init__()
         self.fc0 = nn.Linear(1, width)
         self.blocks = nn.ModuleList([CFNOBlock(width, width, modes, cheb_modes) for _ in range(depth)])
@@ -285,21 +289,21 @@ class CFNO2d_small(nn.Module):
 
     def forward(self, x):
         B, C, H, W = x.shape
-        x = x.permute(0,2,3,1)
+        x = x.permute(0, 2, 3, 1)
         x = self.fc0(x)
-        x = x.permute(0,3,1,2)
+        x = x.permute(0, 3, 1, 2)
         for blk, w in zip(self.blocks, self.wconvs):
             y = blk(x)
             x = y + w(x)
-        x = x.permute(0,2,3,1)
+        x = x.permute(0, 2, 3, 1)
         x = torch.relu(self.fc1(x))
         x = self.fc2(x)
-        x = x.permute(0,3,1,2)
+        x = x.permute(0, 3, 1, 2)
         return x
 
 
 # -------------------- Poisson dataset generation using Jacobi solver --------------------
-def solve_poisson_jacobi(f, iters=500, tol=1e-6):
+def poisson(f, iters=500, tol=1e-6):
     # Solve -Δ u = f on unit square with zero Dirichlet BC using Jacobi for interior points
     # f: [H, W] tensor (including boundary rows/cols, but boundary f ignored)
     H, W = f.shape
@@ -307,14 +311,16 @@ def solve_poisson_jacobi(f, iters=500, tol=1e-6):
     # keep boundary zero
     dx = 1.0 / (H - 1)
     dy = 1.0 / (W - 1)
-    dx2 = dx*dx; dy2 = dy*dy
-    denom = 2*(dx2 + dy2)
+    dx2 = dx * dx
+    dy2 = dy * dy
+    denom = 2 * (dx2 + dy2)
+    # use Jacobi iteration
     for _ in range(iters):
         u_old = u.clone()
-        # update interior
-        u[1:-1,1:-1] = ((u_old[2:,1:-1] + u_old[:-2,1:-1]) * dy2 +
-                        (u_old[1:-1,2:] + u_old[1:-1,:-2]) * dx2 -
-                        f[1:-1,1:-1]*dx2*dy2) / denom
+        # update interior, 5 points center differential for 2D cases
+        u[1:-1, 1:-1] = ((u_old[2:, 1:-1] + u_old[:-2, 1:-1]) * dy2 +
+                         (u_old[1:-1, 2:] + u_old[1:-1, :-2]) * dx2 -
+                         f[1:-1, 1:-1] * dx2 * dy2) / denom
         # boundaries remain zero (Dirichlet)
         if torch.max(torch.abs(u - u_old)) < tol:
             break
@@ -335,12 +341,12 @@ def make_dataset(n_samples=200, H=32, W=32):
             sy = np.random.uniform(0.03, 0.12)
             xv = torch.linspace(0, 1, H)
             yv = torch.linspace(0, 1, W)
-            Xg, Yg = torch.meshgrid(xv,yv, indexing='ij')
-            g = torch.exp(-((Xg-cx)**2)/(2*sx**2) - ((Yg-cy)**2)/(2*sy**2))
-            amp = np.random.uniform(-5,5)
+            Xg, Yg = torch.meshgrid(xv, yv, indexing='ij')
+            g = torch.exp(-((Xg - cx) ** 2) / (2 * sx ** 2) - ((Yg - cy) ** 2) / (2 * sy ** 2))
+            amp = np.random.uniform(-5, 5)
             f += amp * g
         # solve Poisson
-        u = solve_poisson_jacobi(f, iters=2000, tol=1e-6)
+        u = poisson(f, iters=2000, tol=1e-6)
         X.append(f.unsqueeze(0))  # channel dim
         Y.append(u.unsqueeze(0))
     X = torch.stack(X)  # [N,1,H,W]
@@ -357,16 +363,19 @@ n_test = 40
 X_all, Y_all = make_dataset(n_train + n_val + n_test, H=H, W=W)
 X_train = X_all[:n_train].to(device)
 Y_train = Y_all[:n_train].to(device)
-X_val = X_all[n_train:n_train+n_val].to(device)
-Y_val = Y_all[n_train:n_train+n_val].to(device)
-X_test = X_all[n_train+n_val:].to(device)
-Y_test = Y_all[n_train+n_val:].to(device)
+X_val = X_all[n_train:n_train + n_val].to(device)
+Y_val = Y_all[n_train:n_train + n_val].to(device)
+X_test = X_all[n_train + n_val:].to(device)
+Y_test = Y_all[n_train + n_val:].to(device)
 
 print("Dataset shapes:", X_train.shape, Y_train.shape, X_val.shape, X_test.shape)
 
 # mask for interior points (for loss computation) to ignore boundaries (Dirichlet enforced)
-mask = torch.ones(1,1,H,W)
-mask[:,:,0,:] = 0; mask[:,:,-1,:] = 0; mask[:,:,:,0] = 0; mask[:,:,:,-1] = 0
+mask = torch.ones(1, 1, H, W)
+mask[:, :, 0, :] = 0
+mask[:, :, -1, :] = 0
+mask[:, :, :, 0] = 0
+mask[:, :, :, -1] = 0
 mask = mask.to(device)
 
 
@@ -376,21 +385,23 @@ def train_model(model, X_train, Y_train, X_val, Y_val, epochs=60, batch_size=8, 
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.MSELoss()
     n = X_train.shape[0]
-    logs = {'train':[], 'val':[]}
+    logs = {'train': [], 'val': []}
     for ep in range(epochs):
         perm = torch.randperm(n)
         model.train()
         train_loss = 0.0
         for i in range(0, n, batch_size):
-            idx = perm[i:i+batch_size]
+            idx = perm[i:i + batch_size]
             xb = X_train[idx]
             yb = Y_train[idx]
             pred = model(xb)
-            # enforce Dirichlet BC by zeroing boundaries of pred before loss
+            # enforce Dirichlet BC by zeroing boundaries of pred before loss, hard constraint used
             pred = pred * mask
             yb = yb * mask
             loss = loss_fn(pred, yb)
-            opt.zero_grad(); loss.backward(); opt.step()
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
             train_loss += loss.item() * xb.shape[0]
         train_loss /= n
         # val
@@ -400,15 +411,15 @@ def train_model(model, X_train, Y_train, X_val, Y_val, epochs=60, batch_size=8, 
             val_loss = loss_fn(predv, Y_val * mask).item()
         logs['train'].append(train_loss)
         logs['val'].append(val_loss)
-        if (ep+1) % 10 == 0 or ep==0:
-            print(f"Epoch {ep+1}/{epochs} train {train_loss:.6e} val {val_loss:.6e}")
+        if (ep + 1) % 10 == 0 or ep == 0:
+            print(f"Epoch {ep + 1}/{epochs} train {train_loss:.6e} val {val_loss:.6e}")
     return model, logs
 
 
 if __name__ == '__main__':
     # -------------------- Instantiate and train three models --------------------
     fno = FNO2d_small(modes=6, width=16, depth=3)
-    cno = CNO2d_small(cheb_modes=(8,8), width=16, depth=3)
+    cno = CNO2d_small(cheb_modes=(8, 8), width=16, depth=3)
     cfno = CFNO2d_small(modes=6, cheb_modes=(8, 8), width=16, depth=3)
 
     print("Training FNO:")
@@ -424,13 +435,15 @@ if __name__ == '__main__':
     cfno, logs_cfno = train_model(cfno, X_train, Y_train, X_val, Y_val, epochs=60, batch_size=8, lr=1e-3)
     t_cfno = time.time() - start
 
+
     # -------------------- Evaluate on test set --------------------
     def evaluate(model, X, Y):
         model.eval()
         with torch.no_grad():
             pred = model(X) * mask
-            mse = torch.mean((pred - Y*mask)**2).item()
+            mse = torch.mean((pred - Y * mask) ** 2).item()
         return mse, pred
+
 
     mse_fno, pred_fno = evaluate(fno, X_test, Y_test)
     mse_cno, pred_cno = evaluate(cno, X_test, Y_test)
@@ -442,42 +455,60 @@ if __name__ == '__main__':
     print(f"CFNO: {mse_cfno:.6e} time {t_cfno:.1f}s")
 
     # -------------------- Plot losses and a sample comparison --------------------
-    plt.figure(figsize=(10,4))
-    plt.subplot(1,2,1)
+    plt.figure(figsize=(10, 4))
+    plt.subplot(1, 2, 1)
     plt.plot(logs_fno['train'], label='FNO train')
     plt.plot(logs_fno['val'], linestyle='--', label='FNO val')
     plt.plot(logs_cno['train'], label='CNO train')
     plt.plot(logs_cno['val'], linestyle='--', label='CNO val')
     plt.plot(logs_cfno['train'], label='CFNO train')
     plt.plot(logs_cfno['val'], linestyle='--', label='CFNO val')
-    plt.xlabel('Epoch'); plt.ylabel('MSE'); plt.yscale('log')
+    plt.xlabel('Epoch')
+    plt.ylabel('MSE')
+    plt.yscale('log')
     plt.legend()
 
     # sample index
     idx = 0
-    gt = Y_test[idx,0].cpu().numpy()
-    pf = pred_fno[idx,0].cpu().numpy()
-    pc = pred_cno[idx,0].cpu().numpy()
-    pcf = pred_cfno[idx,0].cpu().numpy()
-    f_sample = X_test[idx,0].cpu().numpy()
+    gt = Y_test[idx, 0].cpu().numpy()
+    pf = pred_fno[idx, 0].cpu().numpy()
+    pc = pred_cno[idx, 0].cpu().numpy()
+    pcf = pred_cfno[idx, 0].cpu().numpy()
+    f_sample = X_test[idx, 0].cpu().numpy()
 
-    plt.subplot(1,2,2)
+    plt.subplot(1, 2, 2)
     plt.suptitle("Sample solution comparison (interior masked BC applied)")
     # show 4 panels
-    plt.imshow(gt, origin='lower'); plt.title('GT'); plt.colorbar(fraction=0.046, pad=0.01)
-    plt.figure(figsize=(10,6))
-    plt.subplot(2,3,1); plt.imshow(f_sample, origin='lower'); plt.title('f (Source Term)'); plt.colorbar(fraction=0.046, pad=0.01)
-    plt.subplot(2,3,2); plt.imshow(gt, origin='lower'); plt.title('Ground Truth u'); plt.colorbar(fraction=0.046, pad=0.01)
-    plt.subplot(2,3,3); plt.imshow(pf, origin='lower'); plt.title('FNO pred'); plt.colorbar(fraction=0.046, pad=0.01)
-    plt.subplot(2,3,4); plt.imshow(pc, origin='lower'); plt.title('CNO pred'); plt.colorbar(fraction=0.046, pad=0.01)
-    plt.subplot(2,3,5); plt.imshow(pcf, origin='lower'); plt.title('CFNO pred'); plt.colorbar(fraction=0.046, pad=0.01)
+    plt.imshow(gt, origin='lower')
+    plt.title('GT')
+    plt.colorbar(fraction=0.046, pad=0.01)
+    plt.figure(figsize=(10, 6))
+    plt.subplot(2, 3, 1)
+    plt.imshow(f_sample, origin='lower')
+    plt.title('f (Source Term)')
+    plt.colorbar(fraction=0.046, pad=0.01)
+    plt.subplot(2, 3, 2)
+    plt.imshow(gt, origin='lower')
+    plt.title('Ground Truth u')
+    plt.colorbar(fraction=0.046, pad=0.01)
+    plt.subplot(2, 3, 3)
+    plt.imshow(pf, origin='lower')
+    plt.title('FNO pred')
+    plt.colorbar(fraction=0.046, pad=0.01)
+    plt.subplot(2, 3, 4)
+    plt.imshow(pc, origin='lower')
+    plt.title('CNO pred')
+    plt.colorbar(fraction=0.046, pad=0.01)
+    plt.subplot(2, 3, 5)
+    plt.imshow(pcf, origin='lower')
+    plt.title('CFNO pred')
+    plt.colorbar(fraction=0.046, pad=0.01)
     plt.tight_layout()
     plt.show()
 
     # Report MSEs in a small dict
     results = {'model': ['FNO', 'CNO', 'CFNO'], 'mse': [mse_fno, mse_cno, mse_cfno], 'time': [t_fno, t_cno, t_cfno]}
     print(pd.DataFrame(results))
-
 
 # next plan: 1d case (linear, nonlinear) 2d case (nonlinear)
 # corresponding weak form training strategy
