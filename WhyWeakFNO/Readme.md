@@ -128,3 +128,5 @@ Poission Results shows that combining Chebyshev polynomial and Fourier series as
 ![Good Enough?](GroundTruth&ConvergenceCurves.png)
 
 ![Well I guess CNFO wins at the seed=114514](Comparison.png)
+
+> PS: By now I still failed to figure out how to use the seed mechanism of this programm successfully. But CFNO is always the best.
