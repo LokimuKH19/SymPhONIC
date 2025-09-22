@@ -129,6 +129,8 @@ In this program the function is expanded through 1st Chebyshev Polinomials, defi
   T_k(x) = \rm{cos} \left(k \rm{arccos} x \right), x\in R, k\in Z_+
 ```
 
+The expansion of the series could be simplified to DCT-II in discreted meaning, then accelerated by FFT.
+
 Poission Results shows that combining Chebyshev polynomial and Fourier series as neural operator might cause some kind of improvements of the model's performance. However I don't think a linear example is persuasive for **no model does bad at these cases only if the code goes wrong**. 
 
 ![Good Enough?](GroundTruth&ConvergenceCurves.png)
