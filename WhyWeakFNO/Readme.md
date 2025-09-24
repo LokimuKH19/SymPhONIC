@@ -140,7 +140,7 @@ Poission Results shows that combining Chebyshev polynomial and Fourier series as
 Someone informed me that the models are not compared in a fair way due to the structures are different, thus you can make FNO more complex in order to imporve its performance, e.g.:
 
 ```python
-    fno = FNO2d_small(modes=14, width=16, depth=3)
+    fno = FNO2d_small(modes=64, width=16, depth=3)
     cno = CNO2d_small(cheb_modes=(8, 8), width=16, depth=3)
     cfno = CFNO2d_small(modes=6, cheb_modes=(8, 8), width=16, depth=3)
 ```
