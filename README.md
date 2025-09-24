@@ -14,9 +14,7 @@ SymPhONIC aims to provide a practical and provable bridge from high-fidelity CFD
 
 ## Quickstart (placeholder)
 This repository is a **living** project. The minimal initial files include:
-- `analytic_cases.py` — analytic and semi-analytic test cases (Lamb–Oseen, Rankine, (potential) flow around a rotating cylinder, Taylor–Couette). Use these for unit tests and to validate weak-form residuals.
-- `src/weakform/` — (planned) core weak residual modules and quadrature utilities.
-- `docs/` — design notes, MVP roadmap, and evaluation metrics.
+- `WhyWeakFNO/` — I will continue recording the process of looking for the solver of SymPhONIC. Maybe modified to a novel or movie in the future(XD).
 
 ## License & contribution
 I used GNU 3.0, temporarily. May change in the future.
