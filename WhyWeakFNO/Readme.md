@@ -146,3 +146,6 @@ Someone informed me that the models are not compared in a fair way due to the st
 ```
 
 The accuracy comparison results are almost the same (CFNO>CNO>>FNO). Nothing changed.
+
+### Update 2025.09.05
+Applied a "Health Action" to the existing code. Added convenient hyperparameter settings and increased the results' readibility for future reproduction concerns. 
