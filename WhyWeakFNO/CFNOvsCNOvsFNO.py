@@ -7,6 +7,9 @@ import time
 from matplotlib import pyplot as plt
 import random
 import pandas as pd
+import datetime
+import os
+import json
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print("Device:", device)
@@ -23,9 +26,6 @@ def seed_everything(seed):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-
-
-seed_everything(seed=114514)
 
 
 # -------------------------
@@ -172,13 +172,13 @@ class SpectralConv2d(nn.Module):
 # CFNO block: combine Fourier spectral conv and Chebyshev spectral conv per layer
 # -------------------------
 class CFNOBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, modes, cheb_modes, alpha=0.5):
-        # alpha\in[0,1], 0.5 is the default
+    def __init__(self, in_channels, out_channels, modes, cheb_modes, alpha_init=0.5):
+        # alpha\in[0,1], 0.5 is the default for initialization and self-adaptive fitting
         super().__init__()
         self.fourier = SpectralConv2d(in_channels, out_channels, modes)
         mh, mw = cheb_modes
         self.cheb = ChebSpectralConv2d(in_channels, out_channels, mh, mw)
-        self.alpha = nn.Parameter(torch.tensor(alpha))
+        self.alpha = nn.Parameter(torch.tensor(alpha_init))
         self.fuse = nn.Conv2d(out_channels * 2, out_channels, kernel_size=1)
 
     def forward(self, x):
@@ -281,10 +281,10 @@ class CNO2d_small(nn.Module):
 
 # CFNO combining both
 class CFNO2d_small(nn.Module):
-    def __init__(self, modes=8, cheb_modes=(8, 8), width=16, depth=3):
+    def __init__(self, modes=8, cheb_modes=(8, 8), width=16, depth=3, alpha_init=0.5):
         super().__init__()
         self.fc0 = nn.Linear(1, width)
-        self.blocks = nn.ModuleList([CFNOBlock(width, width, modes, cheb_modes) for _ in range(depth)])
+        self.blocks = nn.ModuleList([CFNOBlock(width, width, modes, cheb_modes, alpha_init=alpha_init) for _ in range(depth)])
         self.wconvs = nn.ModuleList([nn.Conv2d(width, width, 1) for _ in range(depth)])
         self.fc1 = nn.Linear(width, 64)
         self.fc2 = nn.Linear(64, 1)
@@ -356,31 +356,6 @@ def make_dataset(n_samples=200, H=32, W=32):
     return X, Y
 
 
-# generate dataset
-H = 32
-W = 32
-n_train = 120
-n_val = 40
-n_test = 40
-X_all, Y_all = make_dataset(n_train + n_val + n_test, H=H, W=W)
-X_train = X_all[:n_train].to(device)
-Y_train = Y_all[:n_train].to(device)
-X_val = X_all[n_train:n_train + n_val].to(device)
-Y_val = Y_all[n_train:n_train + n_val].to(device)
-X_test = X_all[n_train + n_val:].to(device)
-Y_test = Y_all[n_train + n_val:].to(device)
-
-print("Dataset shapes:", X_train.shape, Y_train.shape, X_val.shape, X_test.shape)
-
-# mask for interior points (for loss computation) to ignore boundaries (Dirichlet enforced)
-mask = torch.ones(1, 1, H, W)
-mask[:, :, 0, :] = 0
-mask[:, :, -1, :] = 0
-mask[:, :, :, 0] = 0
-mask[:, :, :, -1] = 0
-mask = mask.to(device)
-
-
 # -------------------- Training utilities --------------------
 def train_model(model, X_train, Y_train, X_val, Y_val, epochs=60, batch_size=8, lr=1e-3):
     model = model.to(device)
@@ -419,22 +394,69 @@ def train_model(model, X_train, Y_train, X_val, Y_val, epochs=60, batch_size=8, 
 
 
 if __name__ == '__main__':
+    # -------------------- Set Hyperparameters -----------------------------------
+    config = {
+        "SEED": 142857,
+        "epochs": 60,
+        "batch_size": 8,
+        "lr": 1e-3,
+        "dataset": {"H": 32, "W": 32, "n_train": 120, "n_val": 40, "n_test": 40},
+        "FNO": {"modes": 16, "width": 16, "depth": 6},
+        "CNO": {"cheb_modes": (8, 8), "width": 16, "depth": 3},
+        "CFNO": {"modes": 6, "cheb_modes": (8, 8), "width": 16, "depth": 3, "alpha_init": 0.5},
+    }
+    seed_everything(seed=config["SEED"])
+
+    # ------ Generate dataset ------
+    H = config["dataset"]["H"]
+    W = config["dataset"]["W"]
+    n_train = config["dataset"]["n_train"]
+    n_val = config["dataset"]["n_val"]
+    n_test = config["dataset"]["n_test"]
+    X_all, Y_all = make_dataset(n_train + n_val + n_test, H=H, W=W)
+    X_train = X_all[:n_train].to(device)
+    Y_train = Y_all[:n_train].to(device)
+    X_val = X_all[n_train:n_train + n_val].to(device)
+    Y_val = Y_all[n_train:n_train + n_val].to(device)
+    X_test = X_all[n_train + n_val:].to(device)
+    Y_test = Y_all[n_train + n_val:].to(device)
+
+    print("Dataset shapes:", X_train.shape, Y_train.shape, X_val.shape, X_test.shape)
+
+    # mask for interior points (for loss computation) to ignore boundaries (Dirichlet enforced)
+    mask = torch.ones(1, 1, H, W)
+    mask[:, :, 0, :] = 0
+    mask[:, :, -1, :] = 0
+    mask[:, :, :, 0] = 0
+    mask[:, :, :, -1] = 0
+    mask = mask.to(device)
+
+    # ------ RunCode ------
+    PATHNAME = "CFOresultPoisson"
+    os.makedirs(PATHNAME, exist_ok=True)
+
+
     # -------------------- Instantiate and train three models --------------------
-    fno = FNO2d_small(modes=16, width=16, depth=6)
-    cno = CNO2d_small(cheb_modes=(8, 8), width=16, depth=3)
-    cfno = CFNO2d_small(modes=6, cheb_modes=(8, 8), width=16, depth=3)
+    fno = FNO2d_small(**config["FNO"])
+    cno = CNO2d_small(**config["CNO"])
+    cfno = CFNO2d_small(**config["CFNO"])
 
     print("Training FNO:")
     start = time.time()
-    fno, logs_fno = train_model(fno, X_train, Y_train, X_val, Y_val, epochs=60, batch_size=8, lr=1e-3)
+    fno, logs_fno = train_model(fno, X_train, Y_train, X_val, Y_val,
+                                epochs=config["epochs"], batch_size=config["batch_size"], lr=config["lr"])
     t_fno = time.time() - start
+
     print("Training CNO:")
     start = time.time()
-    cno, logs_cno = train_model(cno, X_train, Y_train, X_val, Y_val, epochs=60, batch_size=8, lr=1e-3)
+    cno, logs_cno = train_model(cno, X_train, Y_train, X_val, Y_val,
+                                epochs=config["epochs"], batch_size=config["batch_size"], lr=config["lr"])
     t_cno = time.time() - start
+
     print("Training CFNO:")
     start = time.time()
-    cfno, logs_cfno = train_model(cfno, X_train, Y_train, X_val, Y_val, epochs=60, batch_size=8, lr=1e-3)
+    cfno, logs_cfno = train_model(cfno, X_train, Y_train, X_val, Y_val,
+                                  epochs=config["epochs"], batch_size=config["batch_size"], lr=config["lr"])
     t_cfno = time.time() - start
 
     # -------------------- Evaluate on test set --------------------
@@ -443,20 +465,45 @@ if __name__ == '__main__':
         with torch.no_grad():
             pred = model(X) * mask
             mse = torch.mean((pred - Y * mask) ** 2).item()
-        return mse, pred
+        return mse
 
-    mse_fno, pred_fno = evaluate(fno, X_test, Y_test)
-    mse_cno, pred_cno = evaluate(cno, X_test, Y_test)
-    mse_cfno, pred_cfno = evaluate(cfno, X_test, Y_test)
+    mse_fno = evaluate(fno, X_test, Y_test)
+    mse_cno = evaluate(cno, X_test, Y_test)
+    mse_cfno = evaluate(cfno, X_test, Y_test)
 
     print("\nTest MSEs (interior):")
     print(f"FNO: {mse_fno:.6e}  time {t_fno:.1f}s")
     print(f"CNO: {mse_cno:.6e}  time {t_cno:.1f}s")
     print(f"CFNO: {mse_cfno:.6e} time {t_cfno:.1f}s")
 
+    # -------------------- Save Result --------------------------------------------
+    # to check the proportion of CNFO's final combination of operator
+    def get_alphas(model):
+        alphas = []
+        for blk in model.blocks:
+            if isinstance(blk, CFNOBlock):
+                alphas.append(torch.sigmoid(blk.alpha).item())
+        return alphas
+
+    results = {
+        "config": config,
+        "results": {
+            "FNO": {"mse": mse_fno, "time": t_fno, "train_loss": logs_fno["train"][-1], "val_loss": logs_fno["val"][-1]},
+            "CNO": {"mse": mse_cno, "time": t_cno, "train_loss": logs_cno["train"][-1], "val_loss": logs_cno["val"][-1]},
+            "CFNO": {"mse": mse_cfno, "time": t_cfno, "train_loss": logs_cfno["train"][-1], "val_loss": logs_cfno["val"][-1],
+                     "final_alpha": get_alphas(cfno)},
+        }
+    }
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    save_path = f"{PATHNAME}/result_SEED{config['SEED']}_{timestamp}.json"
+
+    with open(save_path, "w") as f:
+        json.dump(results, f, indent=4)
+
+    print(f"Results saved to {save_path}")
+
     # -------------------- Plot losses and a sample comparison --------------------
     plt.figure(figsize=(10, 4))
-    plt.subplot(1, 2, 1)
     plt.plot(logs_fno['train'], label='FNO train')
     plt.plot(logs_fno['val'], linestyle='--', label='FNO val')
     plt.plot(logs_cno['train'], label='CNO train')
@@ -467,21 +514,25 @@ if __name__ == '__main__':
     plt.ylabel('MSE')
     plt.yscale('log')
     plt.legend()
+    plt.title("Training & Validation Loss")
+    loss_fig_path = save_path.replace(".json", "_loss.png")
+    plt.savefig(loss_fig_path, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"Loss curve saved to {loss_fig_path}")
 
     # sample index
     idx = 0
+    with torch.no_grad():
+        pred_fno = fno(X_test) * mask
+        pred_cno = cno(X_test) * mask
+        pred_cfno = cfno(X_test) * mask
+
     gt = Y_test[idx, 0].cpu().numpy()
     pf = pred_fno[idx, 0].cpu().numpy()
     pc = pred_cno[idx, 0].cpu().numpy()
     pcf = pred_cfno[idx, 0].cpu().numpy()
     f_sample = X_test[idx, 0].cpu().numpy()
 
-    plt.subplot(1, 2, 2)
-    plt.suptitle("Sample solution comparison (interior masked BC applied)")
-    # show 4 panels
-    plt.imshow(gt, origin='lower')
-    plt.title('GT')
-    plt.colorbar(fraction=0.046, pad=0.01)
     plt.figure(figsize=(10, 6))
     plt.subplot(2, 3, 1)
     plt.imshow(f_sample, origin='lower')
@@ -503,8 +554,12 @@ if __name__ == '__main__':
     plt.imshow(pcf, origin='lower')
     plt.title('CFNO pred')
     plt.colorbar(fraction=0.046, pad=0.01)
+    plt.suptitle("Sample solution comparison (interior masked BC applied)")
     plt.tight_layout()
-    plt.show()
+    sample_fig_path = save_path.replace(".json", "_sample.png")
+    plt.savefig(sample_fig_path, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"Sample comparison saved to {sample_fig_path}")
 
     # Report MSEs in a small dict
     results = {'model': ['FNO', 'CNO', 'CFNO'], 'mse': [mse_fno, mse_cno, mse_cfno], 'time': [t_fno, t_cno, t_cfno]}
