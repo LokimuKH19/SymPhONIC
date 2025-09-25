@@ -172,12 +172,13 @@ class SpectralConv2d(nn.Module):
 # CFNO block: combine Fourier spectral conv and Chebyshev spectral conv per layer
 # -------------------------
 class CFNOBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, modes, cheb_modes):
+    def __init__(self, in_channels, out_channels, modes, cheb_modes, alpha=0.5):
+        # alpha\in[0,1], 0.5 is the default
         super().__init__()
         self.fourier = SpectralConv2d(in_channels, out_channels, modes)
         mh, mw = cheb_modes
         self.cheb = ChebSpectralConv2d(in_channels, out_channels, mh, mw)
-        self.alpha = nn.Parameter(torch.tensor(0.0))
+        self.alpha = nn.Parameter(torch.tensor(alpha))
         self.fuse = nn.Conv2d(out_channels * 2, out_channels, kernel_size=1)
 
     def forward(self, x):
@@ -232,13 +233,13 @@ class FNO2d_small(nn.Module):
     def __init__(self, modes=8, width=16, depth=3):
         super().__init__()
         self.fc0 = nn.Linear(1, width)
-        self.blocks = nn.ModuleList([SpectralConv2d(width, width, modes) for _ in range(depth)])
-        self.wconvs = nn.ModuleList([nn.Conv2d(width, width, 1) for _ in range(depth)])
+        self.blocks = nn.ModuleList([SpectralConv2d(width, width, modes) for _ in range(depth)])     # fourier transform
+        self.wconvs = nn.ModuleList([nn.Conv2d(width, width, 1) for _ in range(depth)])    # weights
         self.fc1 = nn.Linear(width, 64)
         self.fc2 = nn.Linear(64, 1)
 
     def forward(self, x):  # x: [B,1,H,W] source f
-        B, C, H, W = x.shape
+        # B, C, H, W = x.shape
         x = x.permute(0, 2, 3, 1)  # [B,H,W,1]
         x = self.fc0(x)  # [B,H,W,width]
         x = x.permute(0, 3, 1, 2)  # [B,width,H,W]
@@ -264,7 +265,7 @@ class CNO2d_small(nn.Module):
         self.fc2 = nn.Linear(64, 1)
 
     def forward(self, x):
-        B, C, H, W = x.shape
+        # B, C, H, W = x.shape
         x = x.permute(0, 2, 3, 1)
         x = self.fc0(x)
         x = x.permute(0, 3, 1, 2)
@@ -289,7 +290,7 @@ class CFNO2d_small(nn.Module):
         self.fc2 = nn.Linear(64, 1)
 
     def forward(self, x):
-        B, C, H, W = x.shape
+        # B, C, H, W = x.shape
         x = x.permute(0, 2, 3, 1)
         x = self.fc0(x)
         x = x.permute(0, 3, 1, 2)
@@ -419,7 +420,7 @@ def train_model(model, X_train, Y_train, X_val, Y_val, epochs=60, batch_size=8, 
 
 if __name__ == '__main__':
     # -------------------- Instantiate and train three models --------------------
-    fno = FNO2d_small(modes=6, width=16, depth=3)
+    fno = FNO2d_small(modes=16, width=16, depth=6)
     cno = CNO2d_small(cheb_modes=(8, 8), width=16, depth=3)
     cfno = CFNO2d_small(modes=6, cheb_modes=(8, 8), width=16, depth=3)
 
@@ -436,7 +437,6 @@ if __name__ == '__main__':
     cfno, logs_cfno = train_model(cfno, X_train, Y_train, X_val, Y_val, epochs=60, batch_size=8, lr=1e-3)
     t_cfno = time.time() - start
 
-
     # -------------------- Evaluate on test set --------------------
     def evaluate(model, X, Y):
         model.eval()
@@ -444,7 +444,6 @@ if __name__ == '__main__':
             pred = model(X) * mask
             mse = torch.mean((pred - Y * mask) ** 2).item()
         return mse, pred
-
 
     mse_fno, pred_fno = evaluate(fno, X_test, Y_test)
     mse_cno, pred_cno = evaluate(cno, X_test, Y_test)
