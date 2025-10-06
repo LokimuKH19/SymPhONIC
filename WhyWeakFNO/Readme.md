@@ -148,7 +148,8 @@ Someone informed me that the models are not compared in a fair way due to the st
 The accuracy comparison results are almost the same (CFNO>CNO>>FNO). Nothing changed.
 
 ### Update 2025.09.05
-Applied a "Health Action" to the existing code. Added convenient hyperparameter settings and increased the results' readibility for future reproduction concerns. 
+- Applied a "Health Action" to the existing code. Added convenient hyperparameter settings and increased the results' readibility for future reproduction concerns. 
 
 ### Update 2025.10.06
-Added PINN mode into the `CFNOvsCNOvsFNO_PINN.py`, related to the result file `CFOresultPoisson_PINN`. 
+- Added PINN mode into the `CFNOvsCNOvsFNO_PINN.py`, related to the result file `CFOresultPoisson_PINN`. 
+- Added a 3D package `CFNO3D.py`, support for 3d CNO&CFNO solver.
