@@ -145,6 +145,9 @@ Someone informed me that the models are not compared in a fair way due to the st
         "CFNO": {"modes": 6, "cheb_modes": (8, 8), "width": 16, "depth": 3, "alpha_init": 0.5},
 ```
 
+The accuracy comparison results are almost the same (CFNO>CNO>>FNO). Nothing changed.
+
+
 ## A wierd constant?
 
 We recently discovered an interesting phenomenon while comparing PDE neural operators:
@@ -155,8 +158,6 @@ Whether using purely data-driven, hybrid PINN, or purely physical training metho
 FNO excels at capturing low-frequency trends in the solution, but often underfits high-frequency details. CFNO, on the other hand, combines Fourier (low-frequency) and Chebyshev (high-frequency) operators, with each layer having a learnable α to adaptively control the weighting of the two. Experiments show that, regardless of the problem definition, after training, the α per layer consistently converges to approximately 0.62, corresponding to a Fourier weight of sigmoid(0.62) ≈ 0.65 and a Chebyshev weight of ≈ 0.35.
 
 This demonstrates that CFNO automatically learns to preserve the low-frequency smoothness in the PDE solution while also supplementing the necessary high-frequency details, enabling the network to capture both global trends and local features. In other words, CFNO's spectral mixing strategy not only improves prediction accuracy but also allows the network to find the optimal balance between low- and high-frequency features.
-
-The accuracy comparison results are almost the same (CFNO>CNO>>FNO). Nothing changed.
 
 ### Update 2025.09.05
 - Applied a "Health Action" to the existing code. Added convenient hyperparameter settings and increased the results' readibility for future reproduction concerns. 
