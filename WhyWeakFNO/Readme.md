@@ -149,3 +149,6 @@ The accuracy comparison results are almost the same (CFNO>CNO>>FNO). Nothing cha
 
 ### Update 2025.09.05
 Applied a "Health Action" to the existing code. Added convenient hyperparameter settings and increased the results' readibility for future reproduction concerns. 
+
+### Update 2025.10.06
+Added PINN mode into the `CFNOvsCNOvsFNO_PINN.py`, related to the result file `CFOresultPoisson_PINN`. 
