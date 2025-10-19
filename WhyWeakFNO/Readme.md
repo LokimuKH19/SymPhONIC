@@ -170,3 +170,5 @@ This demonstrates that CFNO automatically learns to preserve the low-frequency s
 
 ### Update 2025.10.19
 - Added the `input_features` and the `output_features` parameters into `CFNOvsCNOvsFNO_PINN.py` to make it a easy-to-use python module.
+- Computed 2D burgers flow test via the new program `CFNOvsCNOvsFNOvsDNNvsCNNwithBoundary.py`, result could be seen in the `./burgers` filefolder. I found that the CFNO has significant advantage in solving N-S equations especially with high Re (realized by adjusting the inlet flow velocity).
+- CNN's performance per parameter is very high in high-Re circumstances. My new plan is to Combine CNN with CFNO to achieve better convergence.
