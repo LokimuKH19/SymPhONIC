@@ -121,7 +121,7 @@ See the new experiment in `FNOvsCNNvsDNNwithBoundary`, 2d-steady state Burger's 
 
 ## Wait... We might found a better approach...
 
-`CFNOvsCNOvsFNO.py`:
+`CFNOvsCNOvsFNO.py` & `CFNOvsCNOvsFNO_PINN.py`:
 
 In this program the function is expanded through 1st Chebyshev Polinomials, defined in its triangle form:
 
@@ -131,7 +131,9 @@ In this program the function is expanded through 1st Chebyshev Polinomials, defi
 
 The expansion of the series could be simplified to DCT-II in discreted meaning, then accelerated by FFT.
 
-Poission Results shows that combining Chebyshev polynomial and Fourier series as neural operator might cause some kind of improvements of the model's performance. However I don't think a linear example is persuasive for **no model does bad at these cases only if the code goes wrong**. 
+Poission Results shows that combining Chebyshev polynomial and Fourier series as neural operator might cause some kind of improvements of the model's performance. However I don't think a linear example is persuasive for **no model does bad at these cases only if the code goes wrong**.
+
+This example aims to illustrate the model's capability for solving a 2D-heat conduction problem with a source term f. And the function structure of the neural network is defined as `u=N(f)` (using the source term function itself as the input parameter) instead of `u=N(x,y)` in order to solve the problems with different source terms. Therefore, if the source term changes, you don't have to re-train the model again, which is time-consuming. Moreover, due to the problem is set up within a certain space, the numerical differentiation could be directly used for computing the physical loss regardless of the existence of the spatial coordinates in the network's input.
 
 ![Good Enough, alpha_init=0 was set to 0 for the code](GroundTruth&ConvergenceCurves.png)
 
@@ -165,3 +167,6 @@ This demonstrates that CFNO automatically learns to preserve the low-frequency s
 ### Update 2025.10.06
 - Added PINN mode into the `CFNOvsCNOvsFNO_PINN.py`, related to the result file `CFOresultPoisson_PINN`. 
 - Added a 3D package `CFNO3D.py`, support for 3d CNO&CFNO solver.
+
+### Update 2025.10.19
+- Added the `input_features` and the `output_features` parameters into `CFNOvsCNOvsFNO_PINN.py` to make it a easy-to-use python module.
