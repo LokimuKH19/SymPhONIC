@@ -230,13 +230,13 @@ class CFNO2d(nn.Module):
 
 # -------------------- Networks: FNO, CNO, CFNO --------------------
 class FNO2d_small(nn.Module):
-    def __init__(self, modes=8, width=16, depth=3):
+    def __init__(self, modes=8, width=16, depth=3, input_features=1, output_features=1):
         super().__init__()
-        self.fc0 = nn.Linear(1, width)
+        self.fc0 = nn.Linear(input_features, width)
         self.blocks = nn.ModuleList([SpectralConv2d(width, width, modes) for _ in range(depth)])     # fourier transform
         self.wconvs = nn.ModuleList([nn.Conv2d(width, width, 1) for _ in range(depth)])    # weights
         self.fc1 = nn.Linear(width, 64)
-        self.fc2 = nn.Linear(64, 1)
+        self.fc2 = nn.Linear(64, output_features)
 
     def forward(self, x):  # x: [B,1,H,W] source f
         # B, C, H, W = x.shape
@@ -255,14 +255,14 @@ class FNO2d_small(nn.Module):
 
 # CNO model: use ChebSpectralConv2d blocks instead of Fourier
 class CNO2d_small(nn.Module):
-    def __init__(self, cheb_modes=(8, 8), width=16, depth=3):
+    def __init__(self, cheb_modes=(8, 8), width=16, depth=3, input_features=1, output_features=1):
         super().__init__()
-        self.fc0 = nn.Linear(1, width)
+        self.fc0 = nn.Linear(input_features, width)
         self.blocks = nn.ModuleList(
             [ChebSpectralConv2d(width, width, cheb_modes[0], cheb_modes[1]) for _ in range(depth)])
         self.wconvs = nn.ModuleList([nn.Conv2d(width, width, 1) for _ in range(depth)])
         self.fc1 = nn.Linear(width, 64)
-        self.fc2 = nn.Linear(64, 1)
+        self.fc2 = nn.Linear(64, output_features)
 
     def forward(self, x):
         # B, C, H, W = x.shape
@@ -281,13 +281,13 @@ class CNO2d_small(nn.Module):
 
 # CFNO combining both
 class CFNO2d_small(nn.Module):
-    def __init__(self, modes=8, cheb_modes=(8, 8), width=16, depth=3, alpha_init=0.5):
+    def __init__(self, modes=8, cheb_modes=(8, 8), width=16, depth=3, alpha_init=0.5, input_features=1, output_features=1):
         super().__init__()
-        self.fc0 = nn.Linear(1, width)
+        self.fc0 = nn.Linear(input_features, width)
         self.blocks = nn.ModuleList([CFNOBlock(width, width, modes, cheb_modes, alpha_init=alpha_init) for _ in range(depth)])
         self.wconvs = nn.ModuleList([nn.Conv2d(width, width, 1) for _ in range(depth)])
         self.fc1 = nn.Linear(width, 64)
-        self.fc2 = nn.Linear(64, 1)
+        self.fc2 = nn.Linear(64, output_features)
 
     def forward(self, x):
         # B, C, H, W = x.shape
@@ -442,7 +442,7 @@ if __name__ == '__main__':
         "lr": 1e-3,
         "pde_rate": 1e-5,
         "data_rate": 1,
-        "dataset": {"H": 64, "W": 64, "n_train": 1000, "n_val": 40, "n_test": 40},
+        "dataset": {"H": 64, "W": 64, "n_train": 3, "n_val": 2, "n_test": 1},
         "FNO": {"modes": 16, "width": 16, "depth": 6},
         "CNO": {"cheb_modes": (8, 8), "width": 16, "depth": 3},
         "CFNO": {"modes": 16, "cheb_modes": (8, 8), "width": 16, "depth": 3, "alpha_init": 0.5},
@@ -521,6 +521,7 @@ if __name__ == '__main__':
 
     # -------------------- Evaluate on test set --------------------
     def evaluate(model, X, Y):
+        print(X.shape)
         model.eval()
         with torch.no_grad():
             pred = model(X) * mask
