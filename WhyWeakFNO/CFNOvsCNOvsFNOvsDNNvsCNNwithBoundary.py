@@ -57,11 +57,11 @@ class MLP2d(nn.Module):
         self.input_dim = 2 * grid_size * grid_size
         self.output_dim = 2 * grid_size * grid_size
         self.net = nn.Sequential(
-            nn.Linear(self.input_dim, 1024),
+            nn.Linear(self.input_dim, 64),
             nn.ReLU(),
-            nn.Linear(1024, 1024),
+            nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(1024, self.output_dim)
+            nn.Linear(64, self.output_dim)
         )
 
     def forward(self, x):
@@ -106,21 +106,22 @@ def burgers_residual(u, v, dx=1/64, dy=1/64, nu=0.01):
     v_xx = (v[:,:,2:,:] - 2*v[:,:,1:-1,:] + v[:,:,:-2,:]) / dx**2
     v_yy = (v[:,:,:,2:] - 2*v[:,:,:,1:-1] + v[:,:,:,:-2]) / dy**2
 
-    # 裁剪 u_y 和 u_yy 对齐 u_x 和 u_xx
+    # To Clip
     min_h = u_x.shape[2]
     min_w = u_y.shape[3]
+    u = u[:,:, :min_h, :min_w]
     u_x = u_x[:,:, :min_h, :min_w]
     u_xx = u_xx[:,:, :min_h, :min_w]
     u_y = u_y[:,:, :min_h, :min_w]
     u_yy = u_yy[:,:, :min_h, :min_w]
-
+    v = v[:, :, :min_h, :min_w]
     v_x = v_x[:,:, :min_h, :min_w]
     v_xx = v_xx[:,:, :min_h, :min_w]
     v_y = v_y[:,:, :min_h, :min_w]
     v_yy = v_yy[:,:, :min_h, :min_w]
 
-    r_u = u_x + u_y - nu * (u_xx + u_yy)
-    r_v = v_x + v_y - nu * (v_xx + v_yy)
+    r_u = u*u_x + v*u_y - nu * (u_xx + u_yy)    # todo change the PDE form
+    r_v = u*v_x + v*v_y - nu * (v_xx + v_yy)
 
     return r_u, r_v
 
@@ -142,7 +143,7 @@ def apply_boundary_conditions(u, v):
     v[:, :, -1, :] = 0.0
 
     # Inlet: Dirichlet
-    u[:, :, :, 0] = 10    # todo control the inlet flow rate/Re
+    u[:, :, :, 0] = 10.0    # todo control the inlet flow rate/Re
     v[:, :, :, 0] = 0.0
 
     # Outlet: Neumann
@@ -158,8 +159,8 @@ def apply_boundary_conditions(u, v):
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-cnn = CNN2d().to(device)   # 56k, high performance, could be added to CFNO
-mlp = MLP2d(grid_size=64).to(device)   # 17836032 paras, not good
+cnn = CNN2d().to(device)   # 56k, high performance, highest para efficiency, could be added to CFNO
+mlp = MLP2d(grid_size=64).to(device)   # 1060k paras, parameter efficiency not good
 
 # -----------------------------
 # Add CNO and CFNO
@@ -168,7 +169,7 @@ fno = FNO2d_small(modes=16, width=16, depth=3, input_features=2, output_features
 cno = CNO2d_small(cheb_modes=(8, 8), width=16, depth=3, input_features=2, output_features=2).to(device)   # 50k, also high benefits
 cfno = CFNO2d_small(modes=16, cheb_modes=(8, 8), width=16, depth=3, alpha_init=0.5, input_features=2, output_features=2).to(device)   # 249k, And I'm considering add cnn layer to cfno
 
-lr = 1e-3
+lr = 5e-4
 optimizer_mlp = torch.optim.Adam(mlp.parameters(), lr=lr)
 optimizer_fno = torch.optim.Adam(fno.parameters(), lr=lr)
 optimizer_cnn = torch.optim.Adam(cnn.parameters(), lr=lr)
@@ -177,7 +178,7 @@ optimizer_cfno = torch.optim.Adam(cfno.parameters(), lr=lr)
 
 train_data = torch.cat([train_u, train_v], dim=1).to(device)
 
-epochs = 300
+epochs = 600
 result_fno, result_cnn, result_mlp, result_cno, result_cfno = [], [], [], [], []
 for epoch in range(epochs):
     # ---------------- FNO ----------------
