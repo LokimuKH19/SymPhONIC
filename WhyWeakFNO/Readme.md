@@ -81,22 +81,22 @@ Based on the experiments above:
 
 ---
 
-### 4️⃣ Mathematical Formulation (Steady-state 2D Burgers’ Flow)
+### 4️⃣ Mathematical Formulation
 
-The governing 2D Burgers’ equations:
+The governing equations (See in the `AnotherLinear Case` filefolder), a linear one. (could be modified into Burger's eq with little revisement):
 
 ```math
- u\frac{\partial u}{\partial x} + v\frac{\partial u}{\partial y} = \nu \left(\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial y^2}\right)
+ \frac{\partial u}{\partial x} + \frac{\partial u}{\partial y} = \nu \left(\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial y^2}\right)
 ```
 ```math
-u\frac{\partial v}{\partial x} + v\frac{\partial v}{\partial y} = \nu \left(\frac{\partial^2 v}{\partial x^2}+\frac{\partial^2 v}{\partial y^2}\right)
+\frac{\partial v}{\partial x} + \frac{\partial v}{\partial y} = \nu \left(\frac{\partial^2 v}{\partial x^2}+\frac{\partial^2 v}{\partial y^2}\right)
 ```
 
-with viscosity `ν=0.01` and appropriate boundary conditions.  
+with `ν=0.01` and appropriate boundary conditions.  
 Weak-form residuals are computed via integration against test functions `phi_u`, `phi_v`, while strong-form residuals are evaluated at selected points.
 As for the boundary conditions, this filefolder's primary focus is on the **model's theoretical limit ability to converge to the steady-state solution**, rather than strictly enforcing physical boundary conditions. Therefore, we did not explicitly impose Dirichlet or Neumann boundary conditions. Trival solution (u=C1, v=C2) is acceptable for this ideal limit test.
 
-- For smooth, low-frequency Burgers’ flows, the networks are still able to learn globally smooth solutions.  
+- For smooth cases, the networks are still able to learn globally smooth solutions.  
 - Not setting boundary conditions allows the model to explore trivial or globally minimal-residual solutions, which is sufficient for comparing the convergence performance of FNO, CNN, and MLP.  
 - This setup simplifies the training process while demonstrating the **advantage of FNO in capturing global frequency modes**.  
 
@@ -114,7 +114,7 @@ As for the boundary conditions, this filefolder's primary focus is on the **mode
 > In short: minimal strong-point anchoring + global spectral representation = high efficiency and accuracy.
 
 ### Performance Comparison on a non-trival case:
-See the new experiment in `FNOvsCNNvsDNNwithBoundary`, 2d-steady state Burger's Flow in a channel. FNO still has obvious advantage during the first 500 epoch of training, showing a faster convergence speed.
+See the new experiment in `FNOvsCNNvsDNNwithBoundary`, added boundary condition into the equation. FNO still has obvious advantage during the first 500 epoch of training, showing a faster convergence speed.
 ![non-trival](boundary.png)
 
 > Still, maybe I'll consider corporate structures which can better reserve high frequency features with FNO together in the future.
