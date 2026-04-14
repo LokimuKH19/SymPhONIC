@@ -16,12 +16,13 @@ class AnnularCouette:
     """
 
     def __init__(self, n=64, rh=2.0, rs=4.0,
-                 mu=1.0, rho=1.0, omega_out=1.0,
+                 mu=1.0, rho=1.0, omega_out=1.0, n_blade=1,
                  max_iter=5000, tol=1e-6,
                  u_relax=0.5, p_relax=0.3,
                  device="cuda"):
         self.debug_1D = False    # 调试模式
         self.debug_2D = False
+        self.debug_2P = False
         self.device = torch.device(device if torch.cuda.is_available() else "cpu")
 
         self.n = n
@@ -31,6 +32,8 @@ class AnnularCouette:
         self.rho = rho
         self.nu = mu / rho
         self.omega_out = omega_out
+        self.n_blade = n_blade    # 叶片数，没有叶片的时候为1否则为叶片数
+        self.theta0 = 2*np.pi/self.n_blade
 
         self.max_iter = max_iter
         self.tol = tol
@@ -68,22 +71,41 @@ class AnnularCouette:
         self.RW = torch.roll(self.R, 1, dims=0)
         self.RC = self.R
         self.r_hatC = self.R + self.rh / self.delta_r
-        # 这个r_hat_e, r_hat_w必须用界面值
-        self.r_hatE = 0.5 * (self.r_hatC + self.neighbor(self.r_hatC, "E"))
-        self.r_hatW = 0.5 * (self.r_hatC + self.neighbor(self.r_hatC, "W"))
+        self.r_hatE = self.RE + self.rh / self.delta_r
+        self.r_hatW = self.RW + self.rh / self.delta_r
+        # 相应的界面值
+        self.r_hatEf = 0.5 * (self.r_hatC + self.neighbor(self.r_hatC, "E"))
+        self.r_hatWf = 0.5 * (self.r_hatC + self.neighbor(self.r_hatC, "W"))
         # 边界处修正：内边界西界面在 R=0 处，r̂ = rh/ΔR
-        self.r_hatW[0, :] = self.rh / self.delta_r
+        self.r_hatWf[0, :] = self.rh / self.delta_r
         # 外边界东界面在 R=1 处，r̂ = rs/ΔR
+        self.r_hatEf[-1, :] = self.rs / self.delta_r
+        self.r_hatW[0, :] = self.rh / self.delta_r
         self.r_hatE[-1, :] = self.rs / self.delta_r
         self.K_theta_C = self.K_theta
+        self.K_theta_Ef = 1.0 / (self.r_hatEf * self.theta0)
+        self.K_theta_Wf = 1.0 / (self.r_hatWf * self.theta0)
 
         # 面积（内部点对应的界面）
-        self.AE = self.r_hatE * self.dTheta
-        self.AW = self.r_hatW * self.dTheta
+        self.AE = self.r_hatEf * self.dTheta
+        self.AW = self.r_hatWf * self.dTheta
         self.AN = self.dR
         self.AS = self.dR
         # 控制体无量纲体积
         self.dV = self.r_hatC * self.dR * self.dTheta
+
+    # 第一步：生成n*n网格
+    def _build_grid(self):
+        N = self.n
+
+        self.dR = 1.0 / (N - 1)
+        self.dTheta = 1.0 / (N - 1)
+        R = torch.linspace(0, 1, N, device=self.device)
+        Theta = torch.linspace(0, 1, N, device=self.device)
+        RR, TT = torch.meshgrid(R, Theta, indexing='ij')
+        self.R = RR
+        self.r_hat = RR + self.rh / self.delta_r
+        self.K_theta = 1.0 / (self.r_hat * self.theta0)
 
     def _set_theoretical_pressure(self, mode="Theoretical"):
         if mode == "Theoretical":
@@ -123,26 +145,6 @@ class AnnularCouette:
             # 扩展到二维网格 (N, N)
             self.P = P_1d.unsqueeze(1).expand(-1, self.n).clone()
 
-    # 第一步：生成n*n网格
-    def _build_grid(self):
-        N = self.n
-
-        self.dR = 1.0 / (N - 1)
-        self.dTheta = 1.0 / (N - 1)
-
-        R = torch.linspace(0, 1, N, device=self.device)
-        Theta = torch.linspace(0, 1, N, device=self.device)
-
-        RR, TT = torch.meshgrid(R, Theta, indexing='ij')
-
-        self.R = RR
-
-        # 正确 r_hat
-        self.r_hat = RR + self.rh / self.delta_r
-
-        theta0 = 2 * np.pi
-        self.K_theta = 1.0 / (self.r_hat * theta0)
-
     # 辅助整定边界条件
     def _apply_bc(self):
         self.UR[0, :] = 0.0
@@ -162,8 +164,8 @@ class AnnularCouette:
         dR = self.dR
         dTheta = self.dTheta
         r_hatC = self.r_hatC
-        r_hatE = self.r_hatE
-        r_hatW = self.r_hatW
+        r_hatEf = self.r_hatEf
+        r_hatWf = self.r_hatWf
         K_theta = self.K_theta_C
         Eu = self.Eu_omega
         dV = self.dV
@@ -212,14 +214,14 @@ class AnnularCouette:
         A22_im[0, :] = A22[0, :]
 
         # ======================
-        # 2. 梯度，同动量方程
+        # 2. 梯度，同动量方程，中心FVM，面上FDM
         # ======================
-        GR_C = dV * Eu * (r_hatE * P_ip - r_hatW * P_im) / (2 * r_hatC * dR)
+        GR_C = dV * Eu * (r_hatEf * P_ip - r_hatWf * P_im) / (2 * r_hatC * dR)
         GT_C = dV * Eu * K_theta * (P_jp - P_jm) / (2 * dTheta)
 
         # 面梯度
-        GR_e = dV * Eu * (r_hatE * P_ip - r_hatC * P) / (r_hatE * dR)
-        GR_w = dV * Eu * (r_hatC * P - r_hatW * P_im) / (r_hatC * dR)
+        GR_e = dV * Eu * (self.r_hatE*P_ip - r_hatC*P) / (dR*r_hatEf)
+        GR_w = dV * Eu * (r_hatC*P - self.r_hatW*P_im) / (dR*r_hatWf)
 
         GT_n = dV * Eu * K_theta * (P_jp - P) / dTheta
         GT_s = dV * Eu * K_theta * (P - P_jm) / dTheta
@@ -315,7 +317,7 @@ class AnnularCouette:
         UT = self.UT
 
         # 引入理论压力，单纯检测动量方程是否正确
-        if self.debug_2D:
+        if self.debug_2D or self.debug_2P:
             self._set_theoretical_pressure()
 
         P = self.P
@@ -348,8 +350,6 @@ class AnnularCouette:
 
         # 几何量（全场）
         r_hatC = self.r_hatC
-        r_hatE = self.r_hatE
-        r_hatW = self.r_hatW
         K_theta_C = self.K_theta
 
         # 面积（内部点对应的界面）
@@ -415,8 +415,8 @@ class AnnularCouette:
         # K_theta/(Re r_hat)) * (U_Θ,N - U_Θ,S)/ΔΘ ] 注意：右端项中已包含邻点贡献，将其单独写出
         bf1 = aE * UR_ip + aW * UR_im + aN * UR_jp + aS * UR_jm
 
-        # 严格按文档实现(r_hat_E * P_ip - r_hat_W * P_im) / (2 * r_hatC * dR)
-        pressure_R = Eu * (r_hatE * P_ip - r_hatW * P_im) / (2.0 * r_hatC * self.dR)
+        # 严格按文档实现(r_hat_Ef * P_ip - r_hat_Wf * P_im) / (2 * r_hatC * dR)
+        pressure_R = Eu * (self.r_hatEf * P_ip - self.r_hatWf * P_im) / (2.0 * r_hatC * self.dR)
 
         # 曲率显式项: (UT^*^2) / r_hatC
         curve_exp_R = (UT_C ** 2) / r_hatC
@@ -488,12 +488,12 @@ class AnnularCouette:
             return
         # ---------- 引用常用几何量与参数 ----------
         r_hatC = self.r_hatC
-        r_hatE = self.r_hatE
-        r_hatW = self.r_hatW
+        r_hatEf = self.r_hatEf
+        r_hatWf = self.r_hatWf
         K_theta = self.K_theta_C  # 中心 K_theta
-        # 邻点上的 K_theta (注意：K_theta 仅依赖于 r)
-        K_theta_E = self.neighbor(K_theta, "E")
-        K_theta_W = self.neighbor(K_theta, "W")
+        # K_theta要用界面值
+        K_theta_Ef = self.K_theta_Ef
+        K_theta_Wf = self.K_theta_Wf
         # 周向界面的 K_theta 与中心相同（因为同一径向位置），但为统一仍用中心值
         K_theta_N = K_theta
         K_theta_S = K_theta
@@ -541,8 +541,8 @@ class AnnularCouette:
         D_TS = Cv * r_hatC * AS * (K_theta_S ** 2) / dTheta
 
         # 交叉系数，注意使用界面上的 K_theta
-        X_12E = Cv * AE * K_theta_E / (4.0 * dTheta)
-        X_12W = Cv * AW * K_theta_W / (4.0 * dTheta)
+        X_12E = Cv * AE * K_theta_Ef / (4.0 * dTheta)
+        X_12W = Cv * AW * K_theta_Wf / (4.0 * dTheta)
         X_21N = Cv * r_hatC * AN * K_theta_N / (4.0 * dR)
         X_21S = Cv * r_hatC * AS * K_theta_S / (4.0 * dR)
 
@@ -571,13 +571,13 @@ class AnnularCouette:
         alpha_SE = -X_12E * a12_E - X_21S * a21_S
         alpha_SW = X_12W * a12_W + X_21S * a21_S
 
-        # 担心数值误差把正负相消的部分理论上也要算上
+        # 担心数值误差和改东西把正负相消的部分理论上也要算上
         alpha_C = alpha_E + alpha_W + alpha_N + alpha_S + alpha_NE + alpha_NW + alpha_SE + alpha_SW
 
         # ---------- 3. Jacobi 迭代求解 P' (带径向边界镜像) ----------
         P_prime = self.P_prime.clone()
-        max_inner = 4000
-        for _ in range(max_inner):
+        max_inner = 40 if self.debug_2P else 4000
+        for inner_iter in range(max_inner):
             # 获取邻居（周期性已在 neighbor 中处理）
             P_E = neighbor(P_prime, "E")
             P_W = neighbor(P_prime, "W")
@@ -606,8 +606,20 @@ class AnnularCouette:
             P_prime_new[0, :] = P_prime_new[1, :]
             P_prime_new[-1, :] = P_prime_new[-2, :]
 
-            omega = 0.7
+            omega = 0.1
             P_prime = (1 - omega) * P_prime + omega * P_prime_new
+
+            # ===== 内迭代收敛监控 =====
+            res_inner = torch.max(torch.abs(P_prime_new - P_prime)).item()
+
+            if self.debug_2P and (inner_iter+1) % 50 == 0:
+                print(f"  inner_iter={inner_iter+1}, res={res_inner:.3e}")
+
+            # 内迭代提前停止说明
+            if res_inner < 1e-4:
+                if self.debug_2P:
+                    print(f"  inner converged at {inner_iter+1}, res={res_inner:.3e}")
+                break
 
         self.P_prime = P_prime
 
@@ -620,16 +632,21 @@ class AnnularCouette:
         P_ip[-1, :] = P_prime[-1, :]
         P_im[0, :] = P_prime[0, :]
 
-        GR_prime = Cv * (r_hatE * P_ip - r_hatW * P_im) / (2.0 * r_hatC * dR)
+        GR_prime = Cv * (r_hatEf * P_ip - r_hatWf * P_im) / (2.0 * r_hatC * dR)
         GT_prime = Cv * K_theta * (P_jp - P_jm) / (2.0 * dTheta)
 
         UR_prime = -(a11_r * GR_prime + a12_r * GT_prime)
         UT_prime = -(a21_r * GR_prime + a22_r * GT_prime)
 
+        # 监控连续性
+        mass_res = torch.max(torch.abs(Fe_tilde + Fw_tilde + Fn_tilde + Fs_tilde)).item()
+        print(f"mass = {mass_res: .3e}")
+
         # ---------- 5. 更新速度与压力 ----------
         self.UR = self.UR_tilde + self.u_relax * UR_prime
         self.UT = self.UT_tilde + self.u_relax * UT_prime
         self.P = self.P + self.p_relax * P_prime
+
 
     def solve(self):
         for it in range(self.max_iter):
@@ -665,7 +682,7 @@ class AnnularCouette:
 
         # ===== 映射到物理空间 =====
         r = self.rh + RR * (self.rs - self.rh)
-        theta = TT * 2 * np.pi
+        theta = TT * self.theta0
 
         X = r * np.cos(theta)
         Y = r * np.sin(theta)
@@ -743,14 +760,14 @@ class AnnularCouette:
 if __name__ == "__main__":
     solver = AnnularCouette(n=64,
                             rh=2.0, rs=4.0, mu=1.0, rho=1.0,
-                            omega_out=1,
+                            omega_out=1, n_blade=1,
                             max_iter=50000, tol=1e-6,
                             u_relax=0.3, p_relax=0.3,
                             device="cuda")
     # 因为Coette流动速度和压力解耦，于是我们可以有这两个debug模式，通过将压力置0观察收敛行为，线性比较好因此可以在粗网格上验证
     solver.debug_1D = False    # 用来检查无量纲化方程推导的正确性，优先级大于debug2D，直接用FVM求解无量纲Coette流动
-    solver.debug_2D = True     # 固定P=P_theory不动，看UT和UR收敛，用来检查momentum()的正确性
+    solver.debug_2D = False     # 固定P=P_theory不动，看UT和UR收敛，用来检查momentum()的正确性
+    solver.debug_2P = True    # 固定P=P_theory作为初始值，看算法闭合效果，用来检查pressure()更新的正确性
     # debug模式设置：n=64 max_iter=50000 tol=1e-6 u_relax=0.3 p_relax=0.3,
     solver.solve()
     solver.post()
-    
