@@ -77,7 +77,7 @@ class PressureUpdater:
         # 约束一下零点
         return P_prime - torch.mean(P_prime)
 
-    # 好一点的求解器，例如基于Krylov子空间的GMRES
+    # 好一点的求解器，例如FNO
     def GMRES(self, P_prime):
         ...
 
