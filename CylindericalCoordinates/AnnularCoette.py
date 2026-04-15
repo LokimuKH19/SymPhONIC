@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
+import PressureUpdaters
 
 
 class AnnularCouette:
@@ -574,54 +575,13 @@ class AnnularCouette:
         # 担心数值误差和改东西把正负相消的部分理论上也要算上
         alpha_C = alpha_E + alpha_W + alpha_N + alpha_S + alpha_NE + alpha_NW + alpha_SE + alpha_SW
 
-        # ---------- 3. Jacobi 迭代求解 P' (带径向边界镜像) ----------
+        # ---------- 3. 迭代求解 P' (带径向边界镜像) ----------
         P_prime = self.P_prime.clone()
         max_inner = 40 if self.debug_2P else 4000
-        for inner_iter in range(max_inner):
-            # 获取邻居（周期性已在 neighbor 中处理）
-            P_E = neighbor(P_prime, "E")
-            P_W = neighbor(P_prime, "W")
-            P_N = neighbor(P_prime, "N")
-            P_S = neighbor(P_prime, "S")
-            P_NE = neighbor(P_N, "E")
-            P_NW = neighbor(P_N, "W")
-            P_SE = neighbor(P_S, "E")
-            P_SW = neighbor(P_S, "W")
-
-            # 径向边界镜像修正（与 momentum 一致）
-            P_E[-1, :] = P_prime[-1, :]  # 外边界 E 面用外壁值
-            P_W[0, :] = P_prime[0, :]  # 内边界 W 面用内壁值
-            # 角点也需相应修正（因涉及 NE, SE 等）
-            P_NE[-1, :] = P_N[-1, :]
-            P_SE[-1, :] = P_S[-1, :]
-            P_NW[0, :] = P_N[0, :]
-            P_SW[0, :] = P_S[0, :]
-
-            rhs = (alpha_E * P_E + alpha_W * P_W + alpha_N * P_N + alpha_S * P_S +
-                   alpha_NE * P_NE + alpha_NW * P_NW + alpha_SE * P_SE + alpha_SW * P_SW +
-                   beta)
-            P_prime_new = rhs / (alpha_C + 1e-12)
-
-            # 强制壁面 Neumann 条件：内外壁面法向梯度为零，直接令边界值等于相邻内点
-            P_prime_new[0, :] = P_prime_new[1, :]
-            P_prime_new[-1, :] = P_prime_new[-2, :]
-
-            omega = 0.1
-            P_prime = (1 - omega) * P_prime + omega * P_prime_new
-
-            # ===== 内迭代收敛监控 =====
-            res_inner = torch.max(torch.abs(P_prime_new - P_prime)).item()
-
-            if self.debug_2P and (inner_iter+1) % 50 == 0:
-                print(f"  inner_iter={inner_iter+1}, res={res_inner:.3e}")
-
-            # 内迭代提前停止说明
-            if res_inner < 1e-4:
-                if self.debug_2P:
-                    print(f"  inner converged at {inner_iter+1}, res={res_inner:.3e}")
-                break
-
-        self.P_prime = P_prime
+        _alpha_ = {"C": alpha_C, "E": alpha_E, "W": alpha_W, "N": alpha_N, "S": alpha_S,
+                   "NE": alpha_NE, "NW": alpha_NW, "SE": alpha_SE, "SW": alpha_SW}
+        P_PRIME_SOLVER = PressureUpdaters.PressureUpdater(_alpha_, beta)    # 初始化压力求解器
+        self.P_prime = P_PRIME_SOLVER.jacobi_iter2d(max_inner, P_prime)
 
         # ---------- 4. 速度修正 U' = -A^{-1} G P' (式 2.86) ----------
         P_ip = neighbor(P_prime, "E")
@@ -646,7 +606,6 @@ class AnnularCouette:
         self.UR = self.UR_tilde + self.u_relax * UR_prime
         self.UT = self.UT_tilde + self.u_relax * UT_prime
         self.P = self.P + self.p_relax * P_prime
-
 
     def solve(self):
         for it in range(self.max_iter):
@@ -767,7 +726,7 @@ if __name__ == "__main__":
     # 因为Coette流动速度和压力解耦，于是我们可以有这两个debug模式，通过将压力置0观察收敛行为，线性比较好因此可以在粗网格上验证
     solver.debug_1D = False    # 用来检查无量纲化方程推导的正确性，优先级大于debug2D，直接用FVM求解无量纲Coette流动
     solver.debug_2D = False     # 固定P=P_theory不动，看UT和UR收敛，用来检查momentum()的正确性
-    solver.debug_2P = True    # 固定P=P_theory作为初始值，看算法闭合效果，用来检查pressure()更新的正确性
+    solver.debug_2P = False    # 固定P=P_theory作为初始值，看算法闭合效果，用来检查pressure()更新的正确性
     # debug模式设置：n=64 max_iter=50000 tol=1e-6 u_relax=0.3 p_relax=0.3,
     solver.solve()
     solver.post()
