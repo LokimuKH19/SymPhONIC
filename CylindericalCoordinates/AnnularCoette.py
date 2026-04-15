@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import PressureUpdaters
+from NeuralOperators import seed_everything
 
 
 class AnnularCouette:
@@ -50,7 +51,8 @@ class AnnularCouette:
         self.sgn_omega = 1.0 if self.omega_out >= 0 else -1.0
 
         self.P = torch.zeros((n, n), device=self.device)
-        self.UR = torch.zeros((n, n), device=self.device)
+        # 一开始不要猜中UR，让P_prime有一段时间的更新动力
+        self.UR = 0.001*torch.randn((n, n), device=self.device)
         self.UT = torch.zeros((n, n), device=self.device)
         self.UR_tilde = torch.zeros((n, n), device=self.device)    # 存储动量方程专用更新
         self.UT_tilde = torch.zeros((n, n), device=self.device)    # 存储动量方程专用更新
@@ -95,10 +97,12 @@ class AnnularCouette:
         # 控制体无量纲体积
         self.dV = self.r_hatC * self.dR * self.dTheta
 
+        # 初始猜测：P数值理论解
+        self._set_theoretical_pressure("Numerical")
+
     # 第一步：生成n*n网格
     def _build_grid(self):
         N = self.n
-
         self.dR = 1.0 / (N - 1)
         self.dTheta = 1.0 / (N - 1)
         R = torch.linspace(0, 1, N, device=self.device)
@@ -145,6 +149,7 @@ class AnnularCouette:
 
             # 扩展到二维网格 (N, N)
             self.P = P_1d.unsqueeze(1).expand(-1, self.n).clone()
+            self._set_theoretical_pressure()
 
     # 辅助整定边界条件
     def _apply_bc(self):
@@ -164,9 +169,6 @@ class AnnularCouette:
     def rhie_chow(self, UR, UT, P, A11, A12, A21, A22):
         dR = self.dR
         dTheta = self.dTheta
-        r_hatC = self.r_hatC
-        r_hatEf = self.r_hatEf
-        r_hatWf = self.r_hatWf
         K_theta = self.K_theta_C
         Eu = self.Eu_omega
         dV = self.dV
@@ -217,12 +219,12 @@ class AnnularCouette:
         # ======================
         # 2. 梯度，同动量方程，中心FVM，面上FDM
         # ======================
-        GR_C = dV * Eu * (r_hatEf * P_ip - r_hatWf * P_im) / (2 * r_hatC * dR)
+        GR_C = dV * Eu * (P_ip - P_im) / (2 * dR)
         GT_C = dV * Eu * K_theta * (P_jp - P_jm) / (2 * dTheta)
 
         # 面梯度
-        GR_e = dV * Eu * (self.r_hatE*P_ip - r_hatC*P) / (dR*r_hatEf)
-        GR_w = dV * Eu * (r_hatC*P - self.r_hatW*P_im) / (dR*r_hatWf)
+        GR_e = dV * Eu * (P_ip - P) / dR
+        GR_w = dV * Eu * (P - P_im) / dR
 
         GT_n = dV * Eu * K_theta * (P_jp - P) / dTheta
         GT_s = dV * Eu * K_theta * (P - P_jm) / dTheta
@@ -260,12 +262,32 @@ class AnnularCouette:
             neighbor(GR_C, "S"), neighbor(GT_C, "S"),
             A11_jm, A12_jm, A21_jm, A22_jm
         )
+        # 面系数需要算术平均
+        A11_e = 0.5 * (A11 + A11_ip)
+        A12_e = 0.5 * (A12 + A12_ip)
+        A21_e = 0.5 * (A21 + A21_ip)
+        A22_e = 0.5 * (A22 + A22_ip)
+
+        A11_w = 0.5 * (A11 + A11_im)
+        A12_w = 0.5 * (A12 + A12_im)
+        A21_w = 0.5 * (A21 + A21_im)
+        A22_w = 0.5 * (A22 + A22_im)
+
+        A11_n = 0.5 * (A11 + A11_jp)
+        A12_n = 0.5 * (A12 + A12_jp)
+        A21_n = 0.5 * (A21 + A21_jp)
+        A22_n = 0.5 * (A22 + A22_jp)
+
+        A11_s = 0.5 * (A11 + A11_jm)
+        A12_s = 0.5 * (A12 + A12_jm)
+        A21_s = 0.5 * (A21 + A21_jm)
+        A22_s = 0.5 * (A22 + A22_jm)
 
         # 面（直接用面梯度 + 中心A）
-        UR_e_corr, UT_e_corr = apply_Ainv(GR_e, GT_C, A11, A12, A21, A22)
-        UR_w_corr, UT_w_corr = apply_Ainv(GR_w, GT_C, A11, A12, A21, A22)
-        UR_n_corr, UT_n_corr = apply_Ainv(GR_C, GT_n, A11, A12, A21, A22)
-        UR_s_corr, UT_s_corr = apply_Ainv(GR_C, GT_s, A11, A12, A21, A22)
+        UR_e_corr, UT_e_corr = apply_Ainv(GR_e, GT_C, A11_e, A12_e, A21_e, A22_e)
+        UR_w_corr, UT_w_corr = apply_Ainv(GR_w, GT_C, A11_w, A12_w, A21_w, A22_w)
+        UR_n_corr, UT_n_corr = apply_Ainv(GR_C, GT_n, A11_n, A12_n, A21_n, A22_n)
+        UR_s_corr, UT_s_corr = apply_Ainv(GR_C, GT_s, A11_s, A12_s, A21_s, A22_s)
 
         # ======================
         # 4. Rhie–Chow 重构
@@ -319,7 +341,8 @@ class AnnularCouette:
 
         # 引入理论压力，单纯检测动量方程是否正确
         if self.debug_2D or self.debug_2P:
-            self._set_theoretical_pressure()
+            mode = "Numerical" if self.debug_2P else "Theoretical"
+            self._set_theoretical_pressure(mode)
 
         P = self.P
         neighbor = self.neighbor
@@ -416,8 +439,8 @@ class AnnularCouette:
         # K_theta/(Re r_hat)) * (U_Θ,N - U_Θ,S)/ΔΘ ] 注意：右端项中已包含邻点贡献，将其单独写出
         bf1 = aE * UR_ip + aW * UR_im + aN * UR_jp + aS * UR_jm
 
-        # 严格按文档实现(r_hat_Ef * P_ip - r_hat_Wf * P_im) / (2 * r_hatC * dR)
-        pressure_R = Eu * (self.r_hatEf * P_ip - self.r_hatWf * P_im) / (2.0 * r_hatC * self.dR)
+        # 压力正常有限差分
+        pressure_R = Eu * (P_ip - P_im) / (2.0 * self.dR)
 
         # 曲率显式项: (UT^*^2) / r_hatC
         curve_exp_R = (UT_C ** 2) / r_hatC
@@ -489,8 +512,6 @@ class AnnularCouette:
             return
         # ---------- 引用常用几何量与参数 ----------
         r_hatC = self.r_hatC
-        r_hatEf = self.r_hatEf
-        r_hatWf = self.r_hatWf
         K_theta = self.K_theta_C  # 中心 K_theta
         # K_theta要用界面值
         K_theta_Ef = self.K_theta_Ef
@@ -572,18 +593,34 @@ class AnnularCouette:
         alpha_SE = -X_12E * a12_E - X_21S * a21_S
         alpha_SW = X_12W * a12_W + X_21S * a21_S
 
-        # 担心数值误差和改东西把正负相消的部分理论上也要算上
-        alpha_C = alpha_E + alpha_W + alpha_N + alpha_S + alpha_NE + alpha_NW + alpha_SE + alpha_SW
+        # 中心系数
+        alpha_C = alpha_E + alpha_W + alpha_N + alpha_S
 
         # ---------- 3. 迭代求解 P' (带径向边界镜像) ----------
         P_prime = self.P_prime.clone()
-        max_inner = 40 if self.debug_2P else 4000
+        max_inner = 40 if self.debug_2P else 10000
         _alpha_ = {"C": alpha_C, "E": alpha_E, "W": alpha_W, "N": alpha_N, "S": alpha_S,
                    "NE": alpha_NE, "NW": alpha_NW, "SE": alpha_SE, "SW": alpha_SW}
-        P_PRIME_SOLVER = PressureUpdaters.PressureUpdater(_alpha_, beta)    # 初始化压力求解器
-        self.P_prime = P_PRIME_SOLVER.jacobi_iter2d(max_inner, P_prime)
+        # todo 在这里选择替换压力求解器
+        # Jacobi预条件
+        P_PRIME_SOLVER = PressureUpdaters.Jacobi(
+            _alpha_, beta, self.device,
+            max_inner=100,
+            tol=1e-6,
+            report_interval=100,
+        )    # 初始化压力求解器
+        P_prime = P_PRIME_SOLVER.solve2d(P_prime, self.P_prime)
+        # BiCG正式
+        P_PRIME_SOLVER = PressureUpdaters.BiCGStab(
+            _alpha_, beta, self.device,
+            max_inner=max_inner,
+            tol=1e-10,
+            report_interval=1,
+        )    # 初始化压力求解器
+        P_prime = P_PRIME_SOLVER.solve2d(P_prime)
 
         # ---------- 4. 速度修正 U' = -A^{-1} G P' (式 2.86) ----------
+        self.P_prime = P_prime
         P_ip = neighbor(P_prime, "E")
         P_im = neighbor(P_prime, "W")
         P_jp = neighbor(P_prime, "N")
@@ -592,7 +629,7 @@ class AnnularCouette:
         P_ip[-1, :] = P_prime[-1, :]
         P_im[0, :] = P_prime[0, :]
 
-        GR_prime = Cv * (r_hatEf * P_ip - r_hatWf * P_im) / (2.0 * r_hatC * dR)
+        GR_prime = Cv * (P_ip - P_im) / (2.0 * dR)
         GT_prime = Cv * K_theta * (P_jp - P_jm) / (2.0 * dTheta)
 
         UR_prime = -(a11_r * GR_prime + a12_r * GT_prime)
@@ -717,6 +754,7 @@ class AnnularCouette:
 
 
 if __name__ == "__main__":
+    seed_everything(10492)
     solver = AnnularCouette(n=64,
                             rh=2.0, rs=4.0, mu=1.0, rho=1.0,
                             omega_out=1, n_blade=1,
