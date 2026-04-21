@@ -205,3 +205,196 @@ class BiCGStab:
             f"Maximum P_prime: {torch.max(torch.abs(x)).item():.6f}, Avg P_prime: {torch.mean(torch.abs(x)).item():.6f}")
         return x
 
+
+class GMG:
+    def __init__(self, coef, device="cuda", levels=3, pre_smooth=3, post_smooth=3):
+        """
+        coef: dict with keys C, E, W, N, S
+        """
+        self.device = device
+        self.levels = levels
+        self.pre = pre_smooth
+        self.post = post_smooth
+
+        self.hierarchy = self.build_hierarchy(coef)
+
+    # ===============================
+    # 构建多层网格
+    # ===============================
+    def build_hierarchy(self, coef):
+        levels = []
+        current = coef
+
+        for _ in range(self.levels):
+            levels.append(current)
+
+            # 最粗网格停止
+            if current["C"].shape[0] <= 4:
+                break
+
+            current = self.coarsen(current)
+
+        return levels
+
+    # ===============================
+    # 粗化（2x降采样）
+    # ===============================
+    def coarsen(self, coef):
+        def downsample(x):
+            return x[::2, ::2]
+
+        return {
+            "C": downsample(coef["C"]),
+            "E": downsample(coef["E"]),
+            "W": downsample(coef["W"]),
+            "N": downsample(coef["N"]),
+            "S": downsample(coef["S"]),
+        }
+
+    # ===============================
+    # 邻居（周期）
+    # ===============================
+    def nb(self, x, d):
+        return torch.roll(
+            x,
+            shifts={"E": -1, "W": 1, "N": -1, "S": 1}[d],
+            dims={"E": 0, "W": 0, "N": 1, "S": 1}[d]
+        )
+
+    # ===============================
+    # A @ x
+    # ===============================
+    def apply_A(self, coef, x):
+        C = coef["C"]
+        E = coef["E"]
+        W = coef["W"]
+        N = coef["N"]
+        S = coef["S"]
+
+        xE = self.nb(x, "E")
+        xW = self.nb(x, "W")
+        xN = self.nb(x, "N")
+        xS = self.nb(x, "S")
+
+        # 径向镜像
+        xE[-1, :] = x[-1, :]
+        xW[0, :] = x[0, :]
+
+        Ax = C * x - (E * xE + W * xW + N * xN + S * xS)
+
+        # 锁点
+        Ax[0, 0] = x[0, 0]
+
+        return Ax
+
+    # ===============================
+    # Jacobi smoother
+    # ===============================
+    def smooth(self, coef, b, x):
+        C = coef["C"]
+        E = coef["E"]
+        W = coef["W"]
+        N = coef["N"]
+        S = coef["S"]
+
+        for _ in range(self.pre):
+            xE = self.nb(x, "E")
+            xW = self.nb(x, "W")
+            xN = self.nb(x, "N")
+            xS = self.nb(x, "S")
+
+            xE[-1, :] = x[-1, :]
+            xW[0, :] = x[0, :]
+
+            rhs = E * xE + W * xW + N * xN + S * xS + b
+            x_new = rhs / (C + 1e-12)
+
+            # 松弛
+            x = 0.7 * x_new + 0.3 * x
+
+            x[0, 0] = 0.0
+
+        return x
+
+    # ===============================
+    # Restriction（下采样）
+    # ===============================
+    def restrict(self, r):
+        return r[::2, ::2]
+
+    # ===============================
+    # Prolongation（插值）
+    # ===============================
+    def prolong(self, ec, shape):
+        ef = torch.zeros(shape, device=self.device)
+
+        # 1️⃣ 粗点直接赋值
+        ef[::2, ::2] = ec
+
+        # 2️⃣ x方向插值（行方向）
+        ef[1:-1:2, ::2] = 0.5 * (ec[:-1, :] + ec[1:, :])
+
+        # 边界（最后一行复制）
+        ef[-1, ::2] = ec[-1, :]
+
+        # 3️⃣ y方向插值（列方向）
+        ef[:, 1:-1:2] = 0.5 * (ef[:, :-2:2] + ef[:, 2::2])
+
+        # 边界（最后一列复制）
+        ef[:, -1] = ef[:, -2]
+
+        return ef
+
+    # ===============================
+    # V-cycle
+    # ===============================
+    def v_cycle(self, level, b, x):
+
+        coef = self.hierarchy[level]
+
+        # 最粗网格：直接迭代
+        if level == len(self.hierarchy) - 1:
+            for _ in range(20):
+                x = self.smooth(coef, b, x)
+            return x
+
+        # 1️⃣ 预平滑
+        x = self.smooth(coef, b, x)
+
+        # 2️⃣ 残差
+        r = b - self.apply_A(coef, x)
+
+        # 3️⃣ restrict
+        r_c = self.restrict(r)
+
+        # 4️⃣ coarse solve
+        ec = torch.zeros_like(r_c)
+        ec = self.v_cycle(level + 1, r_c, ec)
+
+        # 5️⃣ prolong
+        x = x + self.prolong(ec, x.shape)
+
+        # 6️⃣ 后平滑
+        for _ in range(self.post):
+            x = self.smooth(coef, b, x)
+
+        return x
+
+    # ===============================
+    # 外部接口
+    # ===============================
+    def solve(self, b, max_iter=20):
+        x = torch.zeros_like(b)
+
+        for k in range(max_iter):
+            x = self.v_cycle(0, b, x)
+
+            r = b - self.apply_A(self.hierarchy[0], x)
+            res = torch.norm(r)
+
+            print(f"  GMG iter={k+1}, res={res.item():.3e}")
+
+            if res < 1e-8:
+                break
+
+        return x

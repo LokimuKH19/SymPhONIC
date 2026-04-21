@@ -52,8 +52,8 @@ class AnnularCouette:
 
         self.P = torch.zeros((n, n), device=self.device)
         # 一开始不要猜中UR，让P_prime有一段时间的更新动力
-        self.UR = 0.001*torch.randn((n, n), device=self.device)
-        self.UT = torch.zeros((n, n), device=self.device)
+        self.UR = 0.01*torch.randn((n, n), device=self.device)
+        self.UT = 0.01*torch.randn((n, n), device=self.device)
         self.UR_tilde = torch.zeros((n, n), device=self.device)    # 存储动量方程专用更新
         self.UT_tilde = torch.zeros((n, n), device=self.device)    # 存储动量方程专用更新
         self.P_prime = torch.zeros((n, n), device=self.device)    # 存储压力修正值
@@ -610,6 +610,7 @@ class AnnularCouette:
             report_interval=100,
         )    # 初始化压力求解器
         P_prime = P_PRIME_SOLVER.solve2d(P_prime, self.P_prime)
+        '''
         # BiCG正式
         P_PRIME_SOLVER = PressureUpdaters.BiCGStab(
             _alpha_, beta, self.device,
@@ -618,6 +619,17 @@ class AnnularCouette:
             report_interval=1,
         )    # 初始化压力求解器
         P_prime = P_PRIME_SOLVER.solve2d(P_prime)
+        '''
+        # 只取5点
+        coef_gmg = {
+            "C": alpha_C,
+            "E": alpha_E,
+            "W": alpha_W,
+            "N": alpha_N,
+            "S": alpha_S
+        }
+        GMG_SOLVER = PressureUpdaters.GMG(coef_gmg, self.device, levels=4)
+        P_prime = GMG_SOLVER.solve(beta)
 
         # ---------- 4. 速度修正 U' = -A^{-1} G P' (式 2.86) ----------
         self.P_prime = P_prime
@@ -758,7 +770,7 @@ if __name__ == "__main__":
     solver = AnnularCouette(n=64,
                             rh=2.0, rs=4.0, mu=1.0, rho=1.0,
                             omega_out=1, n_blade=1,
-                            max_iter=50000, tol=1e-6,
+                            max_iter=50000, tol=1e-5,
                             u_relax=0.3, p_relax=0.3,
                             device="cuda")
     # 因为Coette流动速度和压力解耦，于是我们可以有这两个debug模式，通过将压力置0观察收敛行为，线性比较好因此可以在粗网格上验证
