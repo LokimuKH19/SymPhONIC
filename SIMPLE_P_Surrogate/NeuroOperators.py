@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.fft
 import math
 import numpy as np
@@ -181,6 +182,171 @@ class CFNOBlock(nn.Module):
         return y_blend + y_fused
 
 
+def mixed_boundary_pad2d(x, pad_h, pad_w):
+    if pad_w > 0:
+        x = F.pad(x, (pad_w, pad_w, 0, 0), mode="replicate")
+    if pad_h > 0:
+        x = F.pad(x, (0, 0, pad_h, pad_h), mode="circular")
+    return x
+
+
+class MultiBandSpectralConv2d(nn.Module):
+    def __init__(self, in_channels, out_channels, low_modes, high_modes=4):
+        super().__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.low_modes = int(low_modes)
+        self.high_modes = int(max(high_modes, 0))
+        scale = 1 / max(in_channels * out_channels, 1)
+        self.weights_low_pos = nn.Parameter(
+            scale * torch.randn(in_channels, out_channels, self.low_modes, self.low_modes, dtype=torch.cfloat)
+        )
+        self.weights_low_neg = nn.Parameter(
+            scale * torch.randn(in_channels, out_channels, self.low_modes, self.low_modes, dtype=torch.cfloat)
+        )
+        if self.high_modes > 0:
+            self.weights_high_pos = nn.Parameter(
+                scale * torch.randn(in_channels, out_channels, self.low_modes, self.high_modes, dtype=torch.cfloat)
+            )
+            self.weights_high_neg = nn.Parameter(
+                scale * torch.randn(in_channels, out_channels, self.low_modes, self.high_modes, dtype=torch.cfloat)
+            )
+        else:
+            self.register_parameter("weights_high_pos", None)
+            self.register_parameter("weights_high_neg", None)
+
+    def compl_mul2d(self, input, weights):
+        return torch.einsum("bixy,ioxy->boxy", input, weights)
+
+    def forward(self, x):
+        B, _, H, W = x.shape
+        x_ft = torch.fft.rfft2(x, norm="forward")
+        freq_w = W // 2 + 1
+        out_ft = torch.zeros(B, self.out_channels, H, freq_w, device=x.device, dtype=torch.cfloat)
+
+        mh = min(self.low_modes, H)
+        mw = min(self.low_modes, freq_w)
+        out_ft[:, :, :mh, :mw] = self.compl_mul2d(
+            x_ft[:, :, :mh, :mw],
+            self.weights_low_pos[:, :, :mh, :mw],
+        )
+        if mh > 0:
+            out_ft[:, :, -mh:, :mw] = self.compl_mul2d(
+                x_ft[:, :, -mh:, :mw],
+                self.weights_low_neg[:, :, :mh, :mw],
+            )
+
+        high_available = max(freq_w - mw, 0)
+        hw = min(self.high_modes, high_available)
+        if hw > 0:
+            out_ft[:, :, :mh, -hw:] = out_ft[:, :, :mh, -hw:] + self.compl_mul2d(
+                x_ft[:, :, :mh, -hw:],
+                self.weights_high_pos[:, :, :mh, :hw],
+            )
+            out_ft[:, :, -mh:, -hw:] = out_ft[:, :, -mh:, -hw:] + self.compl_mul2d(
+                x_ft[:, :, -mh:, -hw:],
+                self.weights_high_neg[:, :, :mh, :hw],
+            )
+
+        return torch.fft.irfft2(out_ft, s=(H, W), norm="forward")
+
+
+class FourierFeatureGrid2d(nn.Module):
+    def __init__(self, bands=(1, 2, 4, 8)):
+        super().__init__()
+        self.register_buffer("bands", torch.tensor(list(bands), dtype=torch.float32), persistent=False)
+
+    @property
+    def extra_channels(self):
+        return int(self.bands.numel()) * 4
+
+    def forward(self, x):
+        if self.bands.numel() == 0:
+            return x
+        B, _, H, W = x.shape
+        yy = torch.linspace(0.0, 1.0, H, device=x.device, dtype=x.dtype).view(1, 1, H, 1)
+        xx = torch.linspace(0.0, 1.0, W, device=x.device, dtype=x.dtype).view(1, 1, 1, W)
+        bands = self.bands.to(device=x.device, dtype=x.dtype).view(1, -1, 1, 1)
+        phase_y = 2.0 * math.pi * bands * yy
+        phase_x = 2.0 * math.pi * bands * xx
+        y_features = torch.cat([torch.sin(phase_y), torch.cos(phase_y)], dim=1).expand(B, -1, H, W)
+        x_features = torch.cat([torch.sin(phase_x), torch.cos(phase_x)], dim=1).expand(B, -1, H, W)
+        return torch.cat([x, y_features, x_features], dim=1)
+
+
+class LocalHighPassBlock2d(nn.Module):
+    def __init__(self, channels, kernel_size=3):
+        super().__init__()
+        kernel_size = int(kernel_size)
+        if kernel_size % 2 == 0:
+            raise ValueError("kernel_size must be odd.")
+        self.pad = kernel_size // 2
+        self.depthwise = nn.Conv2d(channels, channels, kernel_size, groups=channels, padding=0)
+        self.pointwise = nn.Conv2d(channels, channels, 1)
+        self.mix = nn.Conv2d(channels, channels, 1)
+
+    def forward(self, x):
+        smooth = F.avg_pool2d(mixed_boundary_pad2d(x, 1, 1), kernel_size=3, stride=1)
+        high = x - smooth
+        y = self.depthwise(mixed_boundary_pad2d(high, self.pad, self.pad))
+        y = F.gelu(self.pointwise(y))
+        return self.mix(y)
+
+
+class HFCFNOBlock(nn.Module):
+    def __init__(
+        self,
+        channels,
+        modes,
+        cheb_modes,
+        high_modes=4,
+        alpha_init=0.5,
+        high_gate_init=-1.0,
+        use_local_highpass=True,
+    ):
+        super().__init__()
+        self.low_cfno = CFNOBlock(channels, channels, modes, cheb_modes, alpha_init=alpha_init)
+        self.band_spectral = MultiBandSpectralConv2d(channels, channels, modes, high_modes=high_modes)
+        self.use_local_highpass = bool(use_local_highpass)
+        self.local_high = LocalHighPassBlock2d(channels) if self.use_local_highpass else None
+        self.fuse = nn.Conv2d(channels * 3, channels, 1)
+        self.high_gate = nn.Parameter(torch.tensor(float(high_gate_init)))
+
+    def forward(self, x):
+        low = self.low_cfno(x)
+        band = self.band_spectral(x)
+        local = self.local_high(x) if self.local_high is not None else torch.zeros_like(band)
+        gate = torch.sigmoid(self.high_gate)
+        fused = self.fuse(torch.cat([low, band, local], dim=1))
+        return low + gate * (band + local) + fused
+
+
+class HFFNOBlock(nn.Module):
+    def __init__(
+        self,
+        channels,
+        modes,
+        high_modes=4,
+        high_gate_init=-1.0,
+        use_local_highpass=True,
+    ):
+        super().__init__()
+        self.low_fno = SpectralConv2d(channels, channels, modes)
+        self.band_spectral = MultiBandSpectralConv2d(channels, channels, modes, high_modes=high_modes)
+        self.use_local_highpass = bool(use_local_highpass)
+        self.local_high = LocalHighPassBlock2d(channels) if self.use_local_highpass else None
+        self.fuse = nn.Conv2d(channels * 3, channels, 1)
+        self.high_gate = nn.Parameter(torch.tensor(float(high_gate_init)))
+
+    def forward(self, x):
+        low = self.low_fno(x)
+        band = self.band_spectral(x)
+        local = self.local_high(x) if self.local_high is not None else torch.zeros_like(band)
+        gate = torch.sigmoid(self.high_gate)
+        fused = self.fuse(torch.cat([low, band, local], dim=1))
+        return low + gate * (band + local) + fused
+
+
 # -------------------------
 # CFNO network (example stack)
 # -------------------------
@@ -289,6 +455,112 @@ class CFNO2d_small(nn.Module):
             x = y + w(x)
         x = x.permute(0, 2, 3, 1)
         x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
+        x = x.permute(0, 3, 1, 2)
+        return x
+
+
+class HF_CFNO2d_small(nn.Module):
+    def __init__(
+        self,
+        modes=16,
+        cheb_modes=(16, 16),
+        high_modes=None,
+        width=24,
+        depth=5,
+        alpha_init=0.5,
+        input_features=1,
+        output_features=1,
+        fourier_feature_bands=(1, 2, 4, 8),
+        high_gate_init=-1.0,
+        use_local_highpass=True,
+    ):
+        super().__init__()
+        if high_modes is None:
+            high_modes = max(2, int(modes) // 2)
+        self.feature_grid = FourierFeatureGrid2d(fourier_feature_bands)
+        lifted_features = input_features + self.feature_grid.extra_channels
+        self.fc0 = nn.Linear(lifted_features, width)
+        self.blocks = nn.ModuleList(
+            [
+                HFCFNOBlock(
+                    width,
+                    modes=modes,
+                    cheb_modes=cheb_modes,
+                    high_modes=high_modes,
+                    alpha_init=alpha_init,
+                    high_gate_init=high_gate_init,
+                    use_local_highpass=use_local_highpass,
+                )
+                for _ in range(depth)
+            ]
+        )
+        self.wconvs = nn.ModuleList([nn.Conv2d(width, width, 1) for _ in range(depth)])
+        hidden = max(64, width * 2)
+        self.fc1 = nn.Linear(width, hidden)
+        self.fc2 = nn.Linear(hidden, output_features)
+
+    def forward(self, x):
+        x = self.feature_grid(x)
+        x = x.permute(0, 2, 3, 1)
+        x = self.fc0(x)
+        x = x.permute(0, 3, 1, 2)
+        for blk, w in zip(self.blocks, self.wconvs):
+            y = blk(x)
+            x = F.gelu(y + w(x))
+        x = x.permute(0, 2, 3, 1)
+        x = F.gelu(self.fc1(x))
+        x = self.fc2(x)
+        x = x.permute(0, 3, 1, 2)
+        return x
+
+
+class HF_FNO2d_small(nn.Module):
+    def __init__(
+        self,
+        modes=16,
+        high_modes=None,
+        width=24,
+        depth=5,
+        input_features=1,
+        output_features=1,
+        fourier_feature_bands=(1, 2, 4, 8),
+        high_gate_init=-1.0,
+        use_local_highpass=True,
+    ):
+        super().__init__()
+        if high_modes is None:
+            high_modes = max(2, int(modes) // 2)
+        self.feature_grid = FourierFeatureGrid2d(fourier_feature_bands)
+        lifted_features = input_features + self.feature_grid.extra_channels
+        self.fc0 = nn.Linear(lifted_features, width)
+        self.blocks = nn.ModuleList(
+            [
+                HFFNOBlock(
+                    width,
+                    modes=modes,
+                    high_modes=high_modes,
+                    high_gate_init=high_gate_init,
+                    use_local_highpass=use_local_highpass,
+                )
+                for _ in range(depth)
+            ]
+        )
+        self.wconvs = nn.ModuleList([nn.Conv2d(width, width, 1) for _ in range(depth)])
+        hidden = max(64, width * 2)
+        self.fc1 = nn.Linear(width, hidden)
+        self.fc2 = nn.Linear(hidden, output_features)
+
+    def forward(self, x):
+        x = self.feature_grid(x)
+        x = x.permute(0, 2, 3, 1)
+        x = self.fc0(x)
+        x = x.permute(0, 3, 1, 2)
+        for blk, w in zip(self.blocks, self.wconvs):
+            y = blk(x)
+            x = F.gelu(y + w(x))
+        x = x.permute(0, 2, 3, 1)
+        x = F.gelu(self.fc1(x))
         x = self.fc2(x)
         x = x.permute(0, 3, 1, 2)
         return x

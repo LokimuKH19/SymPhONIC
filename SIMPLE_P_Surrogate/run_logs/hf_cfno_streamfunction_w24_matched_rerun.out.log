@@ -1,0 +1,15 @@
+Using device: cuda
+Network: HF_CFNO2d_small(modes=16, high_modes=32, width=24, depth=5, output_mode=streamfunction)
+Real-equivalent trainable parameters: 11,086,212
+iter     0, L_cont: 1.350e-03, L_mom: 2.115e+02, loss: 2.115e+02
+iter   100, L_cont: 2.366e-01, L_mom: 1.473e+00, loss: 1.709e+00
+iter   200, L_cont: 4.028e-01, L_mom: 2.709e+00, loss: 3.112e+00
+iter   300, L_cont: 1.385e-01, L_mom: 1.700e-01, loss: 3.086e-01
+iter   400, L_cont: 1.070e-01, L_mom: 1.917e-01, loss: 2.987e-01
+iter   500, L_cont: 8.681e-02, L_mom: 1.342e-01, loss: 2.210e-01
+iter   600, L_cont: 5.969e-02, L_mom: 1.136e-01, loss: 1.733e-01
+iter   700, L_cont: 5.558e-02, L_mom: 5.269e-02, loss: 1.083e-01
+iter   800, L_cont: 4.676e-02, L_mom: 1.209e-01, loss: 1.676e-01
+iter   900, L_cont: 3.164e-02, L_mom: 9.404e-02, loss: 1.257e-01
+iter  1000, L_cont: 2.516e-02, L_mom: 1.015e-01, loss: 1.266e-01
+iter  1100, L_cont: 1.590e-02, L_mom: 7.168e-02, loss: 8.758e-02

@@ -1,0 +1,54 @@
+Using device: cuda
+Network: HF_FNO2d_small(modes=16, high_modes=32, width=24, depth=5, output_mode=streamfunction)
+Real-equivalent trainable parameters: 10,343,047
+iter     0, L_cont: 8.842e-04, L_mom: 2.113e+02, loss: 2.113e+02
+iter   100, L_cont: 1.679e-01, L_mom: 3.408e+00, loss: 3.576e+00
+iter   200, L_cont: 1.756e-01, L_mom: 1.237e+00, loss: 1.413e+00
+iter   300, L_cont: 1.916e-01, L_mom: 1.113e+00, loss: 1.305e+00
+iter   400, L_cont: 1.689e-01, L_mom: 2.114e+00, loss: 2.283e+00
+iter   500, L_cont: 2.455e-01, L_mom: 7.872e-01, loss: 1.033e+00
+iter   600, L_cont: 2.977e-01, L_mom: 9.149e-01, loss: 1.213e+00
+iter   700, L_cont: 2.807e-01, L_mom: 4.593e-01, loss: 7.401e-01
+iter   800, L_cont: 2.678e-01, L_mom: 2.656e-01, loss: 5.334e-01
+iter   900, L_cont: 2.338e-01, L_mom: 1.761e-01, loss: 4.099e-01
+iter  1000, L_cont: 1.705e-01, L_mom: 1.973e-01, loss: 3.679e-01
+iter  1100, L_cont: 1.276e-01, L_mom: 1.288e-01, loss: 2.564e-01
+iter  1200, L_cont: 1.078e-01, L_mom: 3.726e-01, loss: 4.804e-01
+iter  1300, L_cont: 8.215e-02, L_mom: 1.688e-01, loss: 2.510e-01
+iter  1400, L_cont: 5.716e-02, L_mom: 1.314e-01, loss: 1.885e-01
+iter  1500, L_cont: 4.839e-02, L_mom: 1.168e-01, loss: 1.651e-01
+iter  1600, L_cont: 4.341e-02, L_mom: 9.389e-02, loss: 1.373e-01
+iter  1700, L_cont: 3.883e-02, L_mom: 8.908e-02, loss: 1.279e-01
+iter  1800, L_cont: 3.322e-02, L_mom: 1.064e-01, loss: 1.397e-01
+iter  1900, L_cont: 5.327e-02, L_mom: 2.155e-01, loss: 2.687e-01
+iter  2000, L_cont: 4.708e-02, L_mom: 2.146e-01, loss: 2.617e-01
+iter  2100, L_cont: 4.020e-02, L_mom: 4.216e-01, loss: 4.618e-01
+iter  2200, L_cont: 3.182e-02, L_mom: 7.426e-02, loss: 1.061e-01
+iter  2300, L_cont: 2.546e-02, L_mom: 7.533e-02, loss: 1.008e-01
+iter  2400, L_cont: 2.303e-02, L_mom: 9.309e-02, loss: 1.161e-01
+iter  2500, L_cont: 1.929e-02, L_mom: 7.412e-02, loss: 9.341e-02
+iter  2600, L_cont: 7.540e-02, L_mom: 5.812e-01, loss: 6.566e-01
+iter  2700, L_cont: 2.577e-02, L_mom: 7.445e-02, loss: 1.002e-01
+iter  2800, L_cont: 2.014e-02, L_mom: 3.218e-02, loss: 5.232e-02
+iter  2900, L_cont: 1.683e-02, L_mom: 2.338e-02, loss: 4.021e-02
+iter  3000, L_cont: 1.505e-02, L_mom: 2.091e-02, loss: 3.595e-02
+iter  3100, L_cont: 1.338e-02, L_mom: 2.243e-02, loss: 3.581e-02
+iter  3200, L_cont: 1.122e-02, L_mom: 1.902e-02, loss: 3.024e-02
+iter  3300, L_cont: 1.084e-02, L_mom: 3.110e-02, loss: 4.194e-02
+iter  3400, L_cont: 2.605e-02, L_mom: 1.988e-01, loss: 2.249e-01
+iter  3500, L_cont: 1.001e-02, L_mom: 1.442e-01, loss: 1.542e-01
+iter  3600, L_cont: 6.704e-03, L_mom: 1.235e-01, loss: 1.302e-01
+iter  3700, L_cont: 5.124e-03, L_mom: 7.272e-02, loss: 7.785e-02
+iter  3800, L_cont: 4.029e-03, L_mom: 1.032e-01, loss: 1.072e-01
+iter  3900, L_cont: 3.597e-03, L_mom: 1.115e-01, loss: 1.151e-01
+iter  4000, L_cont: 3.213e-03, L_mom: 8.065e-02, loss: 8.386e-02
+iter  4100, L_cont: 3.352e-03, L_mom: 7.420e-02, loss: 7.756e-02
+iter  4200, L_cont: 2.754e-03, L_mom: 6.425e-02, loss: 6.701e-02
+iter  4300, L_cont: 4.782e-03, L_mom: 4.112e-02, loss: 4.590e-02
+iter  4400, L_cont: 4.918e-03, L_mom: 3.496e-02, loss: 3.988e-02
+iter  4500, L_cont: 4.631e-03, L_mom: 1.855e-02, loss: 2.318e-02
+iter  4600, L_cont: 4.256e-03, L_mom: 2.396e-02, loss: 2.822e-02
+iter  4700, L_cont: 4.164e-03, L_mom: 1.542e-02, loss: 1.958e-02
+iter  4800, L_cont: 3.231e-02, L_mom: 3.962e-01, loss: 4.285e-01
+iter  4900, L_cont: 1.055e-02, L_mom: 5.288e-02, loss: 6.342e-02
+Time Consumed: 535.5275828838348s

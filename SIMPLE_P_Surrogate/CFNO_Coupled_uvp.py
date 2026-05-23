@@ -1,9 +1,12 @@
 import time
+import argparse
+import copy
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from torch import nn
-from NeuroOperators import seed_everything, FNO2d_small
+from pathlib import Path
+from NeuroOperators import seed_everything, HF_CFNO2d_small, HF_FNO2d_small
 
 
 class NeuralCavityPressure:
@@ -16,7 +19,15 @@ class NeuralCavityPressure:
             lid_velocity=1.0,
             max_iter=5000,
             tol=1e-6,
-            device="cuda"
+            device="cuda",
+            operator_variant="hf_cfno",
+            output_mode="streamfunction",
+            lr=1e-3,
+            interior_margin=1,
+            modes=16,
+            high_modes=32,
+            width=24,
+            depth=5,
     ):
         self.device = torch.device(device if torch.cuda.is_available() else "cpu")
         print(f"Using device: {self.device}")
@@ -28,14 +39,43 @@ class NeuralCavityPressure:
         self.lid_velocity = lid_velocity
         self.max_iter = max_iter
         self.tol = tol
+        self.operator_variant = str(operator_variant).lower()
+        self.output_mode = str(output_mode).lower()
+        if self.operator_variant not in {"hf_cfno", "hf_fno"}:
+            raise ValueError("operator_variant must be 'hf_cfno' or 'hf_fno'.")
+        if self.output_mode not in {"streamfunction", "uvp"}:
+            raise ValueError("output_mode must be 'streamfunction' or 'uvp'.")
+        self.interior_margin = int(max(interior_margin, 0))
+        self.modes = int(modes)
+        self.high_modes = int(high_modes)
+        self.width = int(width)
+        self.depth = int(depth)
 
         # ---------- 算子网络 FNO ----------
         # 输入：单通道常数场 (lid_velocity) -> 输出：修正前的 (u_hat, v_hat, p_hat)
-        self.net = FNO2d_small(
-            modes=64, width=32, depth=5,
-            input_features=1, output_features=3
-        ).to(self.device)
-        self.opt = torch.optim.Adam(self.net.parameters(), lr=1e-3)
+        output_features = 2 if self.output_mode == "streamfunction" else 3
+        net_cls = HF_CFNO2d_small if self.operator_variant == "hf_cfno" else HF_FNO2d_small
+        net_kwargs = dict(
+            modes=self.modes,
+            high_modes=self.high_modes,
+            width=self.width,
+            depth=self.depth,
+            input_features=1,
+            output_features=output_features,
+            fourier_feature_bands=(1, 2, 4, 8),
+            high_gate_init=-1.0,
+            use_local_highpass=True,
+        )
+        if self.operator_variant == "hf_cfno":
+            net_kwargs["cheb_modes"] = (self.modes, self.modes)
+        self.net = net_cls(**net_kwargs).to(self.device)
+        self.opt = torch.optim.Adam(self.net.parameters(), lr=lr)
+        param_count = sum(p.numel() * (2 if p.is_complex() else 1) for p in self.net.parameters())
+        print(
+            f"Network: {net_cls.__name__}(modes={self.modes}, high_modes={self.high_modes}, "
+            f"width={self.width}, depth={self.depth}, output_mode={self.output_mode})"
+        )
+        print(f"Real-equivalent trainable parameters: {param_count:,}")
 
         # 构建网格坐标（仅用于边界掩码的位置信息，不作为网络输入）
         x = torch.linspace(0, 1, N, device=self.device)
@@ -108,21 +148,20 @@ class NeuralCavityPressure:
     def _upwind_x(self, phi, u):
         B, H, W = phi.shape
         dphi_dx = self._gradient_x_central(phi)
-        if H >= 5:
+        if W >= 5:
             start = 2
-            end = H - 2
-            mask_pos = u[:, start:end, :] > 0
-            mask_neg = ~mask_pos
-            if mask_pos.any():
-                term_pos = (3*phi[:, start:end, :][mask_pos] -
-                            4*phi[:, start-1:end-1, :][mask_pos] +
-                            phi[:, start-2:end-2, :][mask_pos]) / (2 * self.dx)
-                dphi_dx[:, start:end, :][mask_pos] = term_pos
-            if mask_neg.any():
-                term_neg = (-3*phi[:, start:end, :][mask_neg] +
-                            4*phi[:, start+1:end+1, :][mask_neg] -
-                            phi[:, start+2:end+2, :][mask_neg]) / (2 * self.dx)
-                dphi_dx[:, start:end, :][mask_neg] = term_neg
+            end = W - 2
+            term_pos = (
+                3 * phi[:, :, start:end]
+                - 4 * phi[:, :, start - 1:end - 1]
+                + phi[:, :, start - 2:end - 2]
+            ) / (2 * self.dx)
+            term_neg = (
+                -3 * phi[:, :, start:end]
+                + 4 * phi[:, :, start + 1:end + 1]
+                - phi[:, :, start + 2:end + 2]
+            ) / (2 * self.dx)
+            dphi_dx[:, :, start:end] = torch.where(u[:, :, start:end] > 0, term_pos, term_neg)
         return dphi_dx
 
     def _upwind_y(self, phi, v):
@@ -131,18 +170,17 @@ class NeuralCavityPressure:
         if H >= 5:
             start = 2
             end = H - 2
-            mask_pos = v[:, start:end, :] > 0
-            mask_neg = ~mask_pos
-            if mask_pos.any():
-                term_pos = (3*phi[:, start:end, :][mask_pos] -
-                            4*phi[:, start-1:end-1, :][mask_pos] +
-                            phi[:, start-2:end-2, :][mask_pos]) / (2 * self.dy)
-                dphi_dy[:, start:end, :][mask_pos] = term_pos
-            if mask_neg.any():
-                term_neg = (-3*phi[:, start:end, :][mask_neg] +
-                            4*phi[:, start+1:end+1, :][mask_neg] -
-                            phi[:, start+2:end+2, :][mask_neg]) / (2 * self.dy)
-                dphi_dy[:, start:end, :][mask_neg] = term_neg
+            term_pos = (
+                3 * phi[:, start:end, :]
+                - 4 * phi[:, start - 1:end - 1, :]
+                + phi[:, start - 2:end - 2, :]
+            ) / (2 * self.dy)
+            term_neg = (
+                -3 * phi[:, start:end, :]
+                + 4 * phi[:, start + 1:end + 1, :]
+                - phi[:, start + 2:end + 2, :]
+            ) / (2 * self.dy)
+            dphi_dy[:, start:end, :] = torch.where(v[:, start:end, :] > 0, term_pos, term_neg)
         return dphi_dy
 
     # ---------- 边界条件施加 (硬约束掩码) ----------
@@ -162,17 +200,44 @@ class NeuralCavityPressure:
 
         return u, v, p
 
-    # ---------- 求解主循环 ----------
-    def solve(self):
-        for it in range(self.max_iter):
-            # 前向传播：网络输入为常数场
-            out = self.net(self.input_field)              # [1, 3, H, W]
-            u_hat = out[:, 0:1, :, :]                     # [1,1,H,W]
+    def apply_pressure_reference(self, p_hat):
+        # Pure physics mode should not constrain pressure on the walls; only
+        # one reference point removes the arbitrary pressure constant.
+        return p_hat * (1 - self.ref_mask)
+
+    def fields_from_network(self):
+        out = self.net(self.input_field)
+        if self.output_mode == "streamfunction":
+            psi = out[:, 0:1, :, :]
+            p_hat = out[:, 1:2, :, :]
+            psi_s = psi.squeeze(1)
+            u_hat = self._gradient_y_central(psi_s).unsqueeze(1)
+            v_hat = -self._gradient_x_central(psi_s).unsqueeze(1)
+        else:
+            u_hat = out[:, 0:1, :, :]
             v_hat = out[:, 1:2, :, :]
             p_hat = out[:, 2:3, :, :]
+        u, v, p = self.apply_bc(u_hat, v_hat, p_hat)
+        return u, v, self.apply_pressure_reference(p)
+
+    def interior(self, f):
+        margin = self.interior_margin
+        if margin <= 0 or f.shape[-1] <= 2 * margin or f.shape[-2] <= 2 * margin:
+            return f
+        return f[:, margin:-margin, margin:-margin]
+
+    # ---------- 求解主循环 ----------
+    def solve(self):
+        self.history = []
+        best_loss = float("inf")
+        best_state = None
+        for it in range(self.max_iter):
+            # 前向传播：网络输入为常数场
+            u, v, p = self.fields_from_network()
+            
 
             # 施加边界条件
-            u, v, p = self.apply_bc(u_hat, v_hat, p_hat)  # [1,1,H,W]
+            
 
             # 转换为 [B,H,W] 形式
             u_s = u.squeeze(1)
@@ -184,6 +249,8 @@ class NeuralCavityPressure:
             u_y = self._upwind_y(u_s, v_s)
             v_x = self._upwind_x(v_s, u_s)
             v_y = self._upwind_y(v_s, v_s)
+            div_x = self._gradient_x_central(u_s)
+            div_y = self._gradient_y_central(v_s)
 
             # 压力梯度（中心差分）
             p_x = self._gradient_x_central(p_s)
@@ -194,42 +261,55 @@ class NeuralCavityPressure:
             lap_v = self._laplacian(v_s)
 
             # 连续性
-            div = u_x + v_y
-            L_cont = torch.mean(div ** 2)
+            div = div_x + div_y
+            L_cont = torch.mean(self.interior(div) ** 2)
 
             # 动量方程
             conv_u = u_s * u_x + v_s * u_y
             conv_v = u_s * v_x + v_s * v_y
             mom_x = self.rho * conv_u + p_x - self.mu * lap_u
             mom_y = self.rho * conv_v + p_y - self.mu * lap_v
-            L_mom = torch.mean(mom_x ** 2 + mom_y ** 2)
+            L_mom = torch.mean(self.interior(mom_x) ** 2 + self.interior(mom_y) ** 2)
 
             loss = L_cont + L_mom
 
             self.opt.zero_grad()
             loss.backward()
+            nn.utils.clip_grad_norm_(self.net.parameters(), max_norm=1.0)
             self.opt.step()
+            self.history.append((it, float(L_cont.detach().cpu()), float(L_mom.detach().cpu()), float(loss.detach().cpu())))
+            current_loss = float(loss.detach().cpu())
+            if current_loss < best_loss:
+                best_loss = current_loss
+                best_state = copy.deepcopy({k: v.detach().cpu() for k, v in self.net.state_dict().items()})
 
             if it % 100 == 0:
-                print(f"iter {it:5d}, L_cont: {L_cont.item():.3e}, L_mom: {L_mom.item():.3e}")
+                print(f"iter {it:5d}, L_cont: {L_cont.item():.3e}, L_mom: {L_mom.item():.3e}, loss: {loss.item():.3e}")
+
+            if not torch.isfinite(loss):
+                print(f"Non-finite loss at iter {it}; stopping.")
+                break
 
             if loss.item() < self.tol:
                 break
 
         # 保存结果
+        if best_state is not None:
+            self.net.load_state_dict({k: v.to(self.device) for k, v in best_state.items()})
+            print(f"Restored best network state with loss={best_loss:.6e}")
+
         with torch.no_grad():
-            out = self.net(self.input_field)
-            u_hat = out[:, 0:1, :, :]
-            v_hat = out[:, 1:2, :, :]
-            p_hat = out[:, 2:3, :, :]
-            u, v, p = self.apply_bc(u_hat, v_hat, p_hat)
+            u, v, p = self.fields_from_network()
 
         self.U = u.squeeze().cpu().numpy()
         self.V = v.squeeze().cpu().numpy()
         self.P = p.squeeze().cpu().numpy()
 
     # ---------- 绘图 ----------
-    def plot(self):
+    def plot(self, output_dir="HF_CFNO_uvp_results", show=False):
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        prefix = f"{self.operator_variant}_{self.output_mode}"
         N = self.N
         x = np.linspace(0, 1, N)
         y = np.linspace(0, 1, N)
@@ -242,28 +322,82 @@ class NeuralCavityPressure:
         plt.figure(figsize=(6, 6))
         plt.streamplot(X, Y, U, V, density=2)
         plt.title("Streamlines")
-        plt.show()
+        plt.savefig(output_dir / f"{prefix}_Streamlines.png", dpi=200, bbox_inches="tight")
+        if show:
+            plt.show()
+        plt.close()
 
         plt.figure(figsize=(6, 6))
         plt.contourf(X, Y, speed, 20, cmap="jet")
         plt.colorbar()
         plt.title("Speed magnitude")
-        plt.show()
+        plt.savefig(output_dir / f"{prefix}_Speed.png", dpi=200, bbox_inches="tight")
+        if show:
+            plt.show()
+        plt.close()
+
+        if hasattr(self, "history") and self.history:
+            history = np.array(self.history, dtype=np.float64)
+            np.savetxt(
+                output_dir / f"{prefix}_history.csv",
+                history,
+                delimiter=",",
+                header="iter,L_cont,L_mom,loss",
+                comments="",
+            )
+            plt.figure(figsize=(7, 4))
+            plt.semilogy(history[:, 0], history[:, 1], label="continuity")
+            plt.semilogy(history[:, 0], history[:, 2], label="momentum")
+            plt.semilogy(history[:, 0], history[:, 3], label="total")
+            plt.xlabel("iteration")
+            plt.ylabel("loss")
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(output_dir / f"{prefix}_Loss.png", dpi=200, bbox_inches="tight")
+            if show:
+                plt.show()
+            plt.close()
 
 
 if __name__ == "__main__":
-    seed_everything(10492)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--operator", choices=["hf_cfno", "hf_fno"], default="hf_cfno")
+    parser.add_argument("--output-mode", choices=["streamfunction", "uvp"], default="streamfunction")
+    parser.add_argument("--n", type=int, default=129)
+    parser.add_argument("--max-iter", type=int, default=5000)
+    parser.add_argument("--tol", type=float, default=1e-8)
+    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--output-dir", default=None)
+    parser.add_argument("--modes", type=int, default=16)
+    parser.add_argument("--high-modes", type=int, default=32)
+    parser.add_argument("--width", type=int, default=24)
+    parser.add_argument("--depth", type=int, default=5)
+    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--interior-margin", type=int, default=1)
+    parser.add_argument("--seed", type=int, default=10492)
+    args = parser.parse_args()
+
+    seed_everything(args.seed)
     solver = NeuralCavityPressure(
-        N=129,
+        N=args.n,
         rho=1,
         mu=0.01,
         lid_velocity=1,
-        tol=1e-8,
-        max_iter=5000,
-        device="cuda"
+        tol=args.tol,
+        max_iter=args.max_iter,
+        device=args.device,
+        operator_variant=args.operator,
+        output_mode=args.output_mode,
+        lr=args.lr,
+        interior_margin=args.interior_margin,
+        modes=args.modes,
+        high_modes=args.high_modes,
+        width=args.width,
+        depth=args.depth,
     )
     t1 = time.time()
     solver.solve()
     t2 = time.time()
     print(f"Time Consumed: {t2 - t1}s")
-    solver.plot()
+    output_dir = args.output_dir or f"{args.operator}_{args.output_mode}_results"
+    solver.plot(output_dir=output_dir, show=False)
