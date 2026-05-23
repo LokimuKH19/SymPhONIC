@@ -15,7 +15,7 @@ SymPhONIC aims to provide a practical and provable bridge from high-fidelity CFD
 ## Quickstart (placeholder)
 This repository is a **living** project. The minimal initial files include:
 - `WhyWeakFNO/` — I will continue recording the process of looking for the solver of SymPhONIC. Maybe modified to a novel or movie in the future(XD).
-- `Simple_P_Surrogate/` - An experimental for analyzing the neural solvers for NS eqs.
+- `Simple_P_Surrogate/` - An experimental for analyzing the neural solvers for NS eqs. This one now is used to test Neural Operators with explicit high-frequency gates for nonlinear PDEs (mainly NS equations).
 
 ## License & contribution
 I used GNU 3.0, temporarily. May change in the future.
