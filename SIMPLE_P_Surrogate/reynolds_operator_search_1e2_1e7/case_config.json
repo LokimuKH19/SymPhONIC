@@ -1,0 +1,94 @@
+﻿{
+    "n":  129,
+    "max_iter":  5000,
+    "reynolds":  [
+                     {
+                         "Label":  "Re1e02",
+                         "Value":  "1e2"
+                     },
+                     {
+                         "Label":  "Re1e03",
+                         "Value":  "1e3"
+                     },
+                     {
+                         "Label":  "Re1e04",
+                         "Value":  "1e4"
+                     },
+                     {
+                         "Label":  "Re1e05",
+                         "Value":  "1e5"
+                     },
+                     {
+                         "Label":  "Re1e06",
+                         "Value":  "1e6"
+                     },
+                     {
+                         "Label":  "Re1e07",
+                         "Value":  "1e7"
+                     }
+                 ],
+    "methods":  [
+                    {
+                        "Name":  "fno",
+                        "Description":  "Plain Fourier neural operator with the same Fourier coordinate features.",
+                        "Args":  [
+                                     "--operator",
+                                     "fno",
+                                     "--boundary-mode",
+                                     "replicate",
+                                     "--gate-alignment-weight",
+                                     "0.0"
+                                 ]
+                    },
+                    {
+                        "Name":  "cfno",
+                        "Description":  "Plain coupled Chebyshev-Fourier neural operator with the same Fourier coordinate features.",
+                        "Args":  [
+                                     "--operator",
+                                     "cfno",
+                                     "--boundary-mode",
+                                     "replicate",
+                                     "--gate-alignment-weight",
+                                     "0.0"
+                                 ]
+                    },
+                    {
+                        "Name":  "hf_cfno",
+                        "Description":  "Legacy HF-CFNO high-pass mechanism under non-periodic cavity padding.",
+                        "Args":  [
+                                     "--operator",
+                                     "hf_cfno",
+                                     "--gate-mode",
+                                     "legacy",
+                                     "--boundary-mode",
+                                     "replicate",
+                                     "--high-gate-init",
+                                     "-1.0",
+                                     "--gate-alignment-weight",
+                                     "0.0"
+                                 ]
+                    },
+                    {
+                        "Name":  "subgrid_hf_cfno",
+                        "Description":  "Subgrid vorticity-gated HF-CFNO without explicit L_gate alignment.",
+                        "Args":  [
+                                     "--operator",
+                                     "hf_cfno",
+                                     "--gate-mode",
+                                     "subgrid",
+                                     "--boundary-mode",
+                                     "replicate",
+                                     "--high-gate-init",
+                                     "-2.0",
+                                     "--gate-threshold",
+                                     "1.0",
+                                     "--gate-slope",
+                                     "2.0",
+                                     "--gate-subgrid-weight",
+                                     "1.0",
+                                     "--gate-alignment-weight",
+                                     "0.0"
+                                 ]
+                    }
+                ]
+}
