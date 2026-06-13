@@ -77,6 +77,13 @@ def idct_2d(X):
     return z
 
 
+def _softplus_inverse(value):
+    value = float(value)
+    if value <= 0.0:
+        raise ValueError("softplus inverse expects a positive value.")
+    return math.log(math.expm1(value))
+
+
 # -------------------------
 # Chebyshev / Cosine spectral conv (real coefficients)
 # -------------------------
@@ -182,12 +189,20 @@ class CFNOBlock(nn.Module):
         return y_blend + y_fused
 
 
-def mixed_boundary_pad2d(x, pad_h, pad_w):
+def boundary_pad2d(x, pad_h, pad_w, pad_mode_h="replicate", pad_mode_w="replicate"):
+    if pad_mode_h not in {"replicate", "reflect", "circular"}:
+        raise ValueError("pad_mode_h must be one of: replicate, reflect, circular.")
+    if pad_mode_w not in {"replicate", "reflect", "circular"}:
+        raise ValueError("pad_mode_w must be one of: replicate, reflect, circular.")
     if pad_w > 0:
-        x = F.pad(x, (pad_w, pad_w, 0, 0), mode="replicate")
+        x = F.pad(x, (pad_w, pad_w, 0, 0), mode=pad_mode_w)
     if pad_h > 0:
-        x = F.pad(x, (0, 0, pad_h, pad_h), mode="circular")
+        x = F.pad(x, (0, 0, pad_h, pad_h), mode=pad_mode_h)
     return x
+
+
+def mixed_boundary_pad2d(x, pad_h, pad_w):
+    return boundary_pad2d(x, pad_h, pad_w, pad_mode_h="circular", pad_mode_w="replicate")
 
 
 class MultiBandSpectralConv2d(nn.Module):
@@ -275,22 +290,138 @@ class FourierFeatureGrid2d(nn.Module):
 
 
 class LocalHighPassBlock2d(nn.Module):
-    def __init__(self, channels, kernel_size=3):
+    def __init__(self, channels, kernel_size=3, boundary_mode_h="replicate", boundary_mode_w="replicate"):
         super().__init__()
         kernel_size = int(kernel_size)
         if kernel_size % 2 == 0:
             raise ValueError("kernel_size must be odd.")
+        self.kernel_size = kernel_size
         self.pad = kernel_size // 2
+        self.boundary_mode_h = boundary_mode_h
+        self.boundary_mode_w = boundary_mode_w
         self.depthwise = nn.Conv2d(channels, channels, kernel_size, groups=channels, padding=0)
         self.pointwise = nn.Conv2d(channels, channels, 1)
         self.mix = nn.Conv2d(channels, channels, 1)
 
     def forward(self, x):
-        smooth = F.avg_pool2d(mixed_boundary_pad2d(x, 1, 1), kernel_size=3, stride=1)
+        smooth = F.avg_pool2d(
+            boundary_pad2d(
+                x,
+                self.pad,
+                self.pad,
+                pad_mode_h=self.boundary_mode_h,
+                pad_mode_w=self.boundary_mode_w,
+            ),
+            kernel_size=self.kernel_size,
+            stride=1,
+        )
         high = x - smooth
-        y = self.depthwise(mixed_boundary_pad2d(high, self.pad, self.pad))
+        y = self.depthwise(
+            boundary_pad2d(
+                high,
+                self.pad,
+                self.pad,
+                pad_mode_h=self.boundary_mode_h,
+                pad_mode_w=self.boundary_mode_w,
+            )
+        )
         y = F.gelu(self.pointwise(y))
         return self.mix(y)
+
+
+class VorticitySubgridGate2d(nn.Module):
+    def __init__(
+        self,
+        channels,
+        grid_spacing=(1.0, 1.0),
+        filter_size=3,
+        boundary_mode_h="replicate",
+        boundary_mode_w="replicate",
+        threshold_init=1.0,
+        slope_init=2.0,
+        subgrid_weight=1.0,
+        eps=1e-6,
+    ):
+        super().__init__()
+        filter_size = int(filter_size)
+        if filter_size % 2 == 0:
+            raise ValueError("filter_size must be odd.")
+        if isinstance(grid_spacing, (tuple, list)):
+            dx, dy = float(grid_spacing[0]), float(grid_spacing[1])
+        else:
+            dx = dy = float(grid_spacing)
+        if dx <= 0.0 or dy <= 0.0:
+            raise ValueError("grid spacing must be positive.")
+        self.dx = dx
+        self.dy = dy
+        self.delta = filter_size * math.sqrt(dx * dy)
+        self.filter_size = filter_size
+        self.pad = filter_size // 2
+        self.boundary_mode_h = boundary_mode_h
+        self.boundary_mode_w = boundary_mode_w
+        self.subgrid_weight = float(subgrid_weight)
+        self.eps = float(eps)
+        self.velocity_probe = nn.Conv2d(channels, 2, kernel_size=1)
+        self.threshold_raw = nn.Parameter(torch.tensor(_softplus_inverse(threshold_init), dtype=torch.float32))
+        self.slope_raw = nn.Parameter(torch.tensor(_softplus_inverse(slope_init), dtype=torch.float32))
+        self.last_gate = None
+        self.last_activity = None
+
+    def _smooth(self, q):
+        return F.avg_pool2d(
+            boundary_pad2d(
+                q,
+                self.pad,
+                self.pad,
+                pad_mode_h=self.boundary_mode_h,
+                pad_mode_w=self.boundary_mode_w,
+            ),
+            kernel_size=self.filter_size,
+            stride=1,
+        )
+
+    def _gradient_x(self, f):
+        padded = boundary_pad2d(
+            f,
+            0,
+            1,
+            pad_mode_h=self.boundary_mode_h,
+            pad_mode_w=self.boundary_mode_w,
+        )
+        return (padded[:, :, :, 2:] - padded[:, :, :, :-2]) / (2.0 * self.dx)
+
+    def _gradient_y(self, f):
+        padded = boundary_pad2d(
+            f,
+            1,
+            0,
+            pad_mode_h=self.boundary_mode_h,
+            pad_mode_w=self.boundary_mode_w,
+        )
+        return (padded[:, :, 2:, :] - padded[:, :, :-2, :]) / (2.0 * self.dy)
+
+    def _curl_z(self, q):
+        u = q[:, 0:1, :, :]
+        v = q[:, 1:2, :, :]
+        return self._gradient_x(v) - self._gradient_y(u)
+
+    def forward(self, x):
+        q = self.velocity_probe(x)
+        q_bar = self._smooth(q)
+        q_prime = q - q_bar
+        omega_resolved = self._curl_z(q_bar)
+        omega_subgrid = self._curl_z(q_prime)
+        activity = self.delta * torch.sqrt(
+            omega_resolved.pow(2) + self.subgrid_weight * omega_subgrid.pow(2) + self.eps
+        )
+        normalizer = activity.mean(dim=(-2, -1), keepdim=True)
+        activity_norm = activity / (normalizer + self.eps)
+        threshold = F.softplus(self.threshold_raw)
+        slope = F.softplus(self.slope_raw)
+        gate = torch.sigmoid(slope * (activity_norm - threshold))
+        self.last_gate = gate.detach()
+        self.last_activity = activity_norm.detach()
+        return gate
 
 
 class HFCFNOBlock(nn.Module):
@@ -303,22 +434,95 @@ class HFCFNOBlock(nn.Module):
         alpha_init=0.5,
         high_gate_init=-1.0,
         use_local_highpass=True,
+        grid_spacing=(1.0, 1.0),
+        boundary_mode_h="replicate",
+        boundary_mode_w="replicate",
+        gate_threshold=1.0,
+        gate_slope=2.0,
+        gate_subgrid_weight=1.0,
+        use_vorticity_gate=True,
+        gate_mode="subgrid",
     ):
         super().__init__()
+        self.gate_mode = str(gate_mode).lower()
+        if self.gate_mode not in {"subgrid", "legacy", "subgrid_gated_fuse"}:
+            raise ValueError("gate_mode must be 'subgrid', 'legacy', or 'subgrid_gated_fuse'.")
         self.low_cfno = CFNOBlock(channels, channels, modes, cheb_modes, alpha_init=alpha_init)
         self.band_spectral = MultiBandSpectralConv2d(channels, channels, modes, high_modes=high_modes)
         self.use_local_highpass = bool(use_local_highpass)
-        self.local_high = LocalHighPassBlock2d(channels) if self.use_local_highpass else None
-        self.fuse = nn.Conv2d(channels * 3, channels, 1)
+        self.local_high = (
+            LocalHighPassBlock2d(
+                channels,
+                boundary_mode_h=boundary_mode_h,
+                boundary_mode_w=boundary_mode_w,
+            )
+            if self.use_local_highpass
+            else None
+        )
+        if self.gate_mode == "legacy":
+            self.fuse = nn.Conv2d(channels * 3, channels, 1)
+            self.high_fuse = None
+            self.vorticity_gate = None
+        elif self.gate_mode == "subgrid_gated_fuse":
+            self.fuse = nn.Conv2d(channels * 3, channels, 1)
+            self.high_fuse = None
+            self.vorticity_gate = (
+                VorticitySubgridGate2d(
+                    channels,
+                    grid_spacing=grid_spacing,
+                    boundary_mode_h=boundary_mode_h,
+                    boundary_mode_w=boundary_mode_w,
+                    threshold_init=gate_threshold,
+                    slope_init=gate_slope,
+                    subgrid_weight=gate_subgrid_weight,
+                )
+                if use_vorticity_gate
+                else None
+            )
+        else:
+            self.fuse = None
+            self.high_fuse = nn.Conv2d(channels * 2, channels, 1)
+            self.vorticity_gate = (
+                VorticitySubgridGate2d(
+                    channels,
+                    grid_spacing=grid_spacing,
+                    boundary_mode_h=boundary_mode_h,
+                    boundary_mode_w=boundary_mode_w,
+                    threshold_init=gate_threshold,
+                    slope_init=gate_slope,
+                    subgrid_weight=gate_subgrid_weight,
+                )
+                if use_vorticity_gate
+                else None
+            )
         self.high_gate = nn.Parameter(torch.tensor(float(high_gate_init)))
+        self.last_gate = None
+        self.last_spatial_gate = None
 
     def forward(self, x):
         low = self.low_cfno(x)
         band = self.band_spectral(x)
         local = self.local_high(x) if self.local_high is not None else torch.zeros_like(band)
-        gate = torch.sigmoid(self.high_gate)
-        fused = self.fuse(torch.cat([low, band, local], dim=1))
-        return low + gate * (band + local) + fused
+        if self.gate_mode == "legacy":
+            gate = torch.sigmoid(self.high_gate)
+            fused = self.fuse(torch.cat([low, band, local], dim=1))
+            gate_map = gate * torch.ones_like(low[:, :1, :, :])
+            self.last_gate = gate_map.detach()
+            self.last_spatial_gate = torch.ones_like(gate_map).detach()
+            return low + gate * (band + local) + fused
+        if self.gate_mode == "subgrid_gated_fuse":
+            fused = self.fuse(torch.cat([low, band, local], dim=1))
+            raw_high = band + local + fused
+        else:
+            raw_high = self.high_fuse(torch.cat([band, local], dim=1))
+        if self.vorticity_gate is None:
+            spatial_gate = torch.ones_like(raw_high[:, :1, :, :])
+        else:
+            spatial_gate = self.vorticity_gate(x)
+        gate = torch.sigmoid(self.high_gate) * spatial_gate
+        self.last_gate = gate.detach()
+        self.last_spatial_gate = spatial_gate
+        return low + gate * raw_high
 
 
 class HFFNOBlock(nn.Module):
@@ -329,22 +533,95 @@ class HFFNOBlock(nn.Module):
         high_modes=4,
         high_gate_init=-1.0,
         use_local_highpass=True,
+        grid_spacing=(1.0, 1.0),
+        boundary_mode_h="replicate",
+        boundary_mode_w="replicate",
+        gate_threshold=1.0,
+        gate_slope=2.0,
+        gate_subgrid_weight=1.0,
+        use_vorticity_gate=True,
+        gate_mode="subgrid",
     ):
         super().__init__()
+        self.gate_mode = str(gate_mode).lower()
+        if self.gate_mode not in {"subgrid", "legacy", "subgrid_gated_fuse"}:
+            raise ValueError("gate_mode must be 'subgrid', 'legacy', or 'subgrid_gated_fuse'.")
         self.low_fno = SpectralConv2d(channels, channels, modes)
         self.band_spectral = MultiBandSpectralConv2d(channels, channels, modes, high_modes=high_modes)
         self.use_local_highpass = bool(use_local_highpass)
-        self.local_high = LocalHighPassBlock2d(channels) if self.use_local_highpass else None
-        self.fuse = nn.Conv2d(channels * 3, channels, 1)
+        self.local_high = (
+            LocalHighPassBlock2d(
+                channels,
+                boundary_mode_h=boundary_mode_h,
+                boundary_mode_w=boundary_mode_w,
+            )
+            if self.use_local_highpass
+            else None
+        )
+        if self.gate_mode == "legacy":
+            self.fuse = nn.Conv2d(channels * 3, channels, 1)
+            self.high_fuse = None
+            self.vorticity_gate = None
+        elif self.gate_mode == "subgrid_gated_fuse":
+            self.fuse = nn.Conv2d(channels * 3, channels, 1)
+            self.high_fuse = None
+            self.vorticity_gate = (
+                VorticitySubgridGate2d(
+                    channels,
+                    grid_spacing=grid_spacing,
+                    boundary_mode_h=boundary_mode_h,
+                    boundary_mode_w=boundary_mode_w,
+                    threshold_init=gate_threshold,
+                    slope_init=gate_slope,
+                    subgrid_weight=gate_subgrid_weight,
+                )
+                if use_vorticity_gate
+                else None
+            )
+        else:
+            self.fuse = None
+            self.high_fuse = nn.Conv2d(channels * 2, channels, 1)
+            self.vorticity_gate = (
+                VorticitySubgridGate2d(
+                    channels,
+                    grid_spacing=grid_spacing,
+                    boundary_mode_h=boundary_mode_h,
+                    boundary_mode_w=boundary_mode_w,
+                    threshold_init=gate_threshold,
+                    slope_init=gate_slope,
+                    subgrid_weight=gate_subgrid_weight,
+                )
+                if use_vorticity_gate
+                else None
+            )
         self.high_gate = nn.Parameter(torch.tensor(float(high_gate_init)))
+        self.last_gate = None
+        self.last_spatial_gate = None
 
     def forward(self, x):
         low = self.low_fno(x)
         band = self.band_spectral(x)
         local = self.local_high(x) if self.local_high is not None else torch.zeros_like(band)
-        gate = torch.sigmoid(self.high_gate)
-        fused = self.fuse(torch.cat([low, band, local], dim=1))
-        return low + gate * (band + local) + fused
+        if self.gate_mode == "legacy":
+            gate = torch.sigmoid(self.high_gate)
+            fused = self.fuse(torch.cat([low, band, local], dim=1))
+            gate_map = gate * torch.ones_like(low[:, :1, :, :])
+            self.last_gate = gate_map.detach()
+            self.last_spatial_gate = torch.ones_like(gate_map).detach()
+            return low + gate * (band + local) + fused
+        if self.gate_mode == "subgrid_gated_fuse":
+            fused = self.fuse(torch.cat([low, band, local], dim=1))
+            raw_high = band + local + fused
+        else:
+            raw_high = self.high_fuse(torch.cat([band, local], dim=1))
+        if self.vorticity_gate is None:
+            spatial_gate = torch.ones_like(raw_high[:, :1, :, :])
+        else:
+            spatial_gate = self.vorticity_gate(x)
+        gate = torch.sigmoid(self.high_gate) * spatial_gate
+        self.last_gate = gate.detach()
+        self.last_spatial_gate = spatial_gate
+        return low + gate * raw_high
 
 
 # -------------------------
@@ -386,9 +663,23 @@ class CFNO2d(nn.Module):
 
 # -------------------- Networks: FNO, CNO, CFNO --------------------
 class FNO2d_small(nn.Module):
-    def __init__(self, modes=8, width=16, depth=3, input_features=1, output_features=1):
+    def __init__(
+        self,
+        modes=8,
+        width=16,
+        depth=3,
+        input_features=1,
+        output_features=1,
+        fourier_feature_bands=None,
+    ):
         super().__init__()
-        self.fc0 = nn.Linear(input_features, width)
+        self.feature_grid = (
+            FourierFeatureGrid2d(fourier_feature_bands)
+            if fourier_feature_bands
+            else None
+        )
+        lifted_features = input_features + (self.feature_grid.extra_channels if self.feature_grid else 0)
+        self.fc0 = nn.Linear(lifted_features, width)
         self.blocks = nn.ModuleList([SpectralConv2d(width, width, modes) for _ in range(depth)])     # fourier transform
         self.wconvs = nn.ModuleList([nn.Conv2d(width, width, 1) for _ in range(depth)])    # weights
         self.fc1 = nn.Linear(width, 64)
@@ -396,6 +687,8 @@ class FNO2d_small(nn.Module):
 
     def forward(self, x):  # x: [B,1,H,W] source f
         # B, C, H, W = x.shape
+        if self.feature_grid is not None:
+            x = self.feature_grid(x)
         x = x.permute(0, 2, 3, 1)  # [B,H,W,1]
         x = self.fc0(x)  # [B,H,W,width]
         x = x.permute(0, 3, 1, 2)  # [B,width,H,W]
@@ -437,9 +730,25 @@ class CNO2d_small(nn.Module):
 
 # CFNO combining both
 class CFNO2d_small(nn.Module):
-    def __init__(self, modes=8, cheb_modes=(8, 8), width=16, depth=3, alpha_init=0.5, input_features=1, output_features=1):
+    def __init__(
+        self,
+        modes=8,
+        cheb_modes=(8, 8),
+        width=16,
+        depth=3,
+        alpha_init=0.5,
+        input_features=1,
+        output_features=1,
+        fourier_feature_bands=None,
+    ):
         super().__init__()
-        self.fc0 = nn.Linear(input_features, width)
+        self.feature_grid = (
+            FourierFeatureGrid2d(fourier_feature_bands)
+            if fourier_feature_bands
+            else None
+        )
+        lifted_features = input_features + (self.feature_grid.extra_channels if self.feature_grid else 0)
+        self.fc0 = nn.Linear(lifted_features, width)
         self.blocks = nn.ModuleList([CFNOBlock(width, width, modes, cheb_modes, alpha_init=alpha_init) for _ in range(depth)])
         self.wconvs = nn.ModuleList([nn.Conv2d(width, width, 1) for _ in range(depth)])
         self.fc1 = nn.Linear(width, 64)
@@ -447,6 +756,8 @@ class CFNO2d_small(nn.Module):
 
     def forward(self, x):
         # B, C, H, W = x.shape
+        if self.feature_grid is not None:
+            x = self.feature_grid(x)
         x = x.permute(0, 2, 3, 1)
         x = self.fc0(x)
         x = x.permute(0, 3, 1, 2)
@@ -474,6 +785,14 @@ class HF_CFNO2d_small(nn.Module):
         fourier_feature_bands=(1, 2, 4, 8),
         high_gate_init=-1.0,
         use_local_highpass=True,
+        grid_spacing=(1.0, 1.0),
+        boundary_mode_h="replicate",
+        boundary_mode_w="replicate",
+        gate_threshold=1.0,
+        gate_slope=2.0,
+        gate_subgrid_weight=1.0,
+        use_vorticity_gate=True,
+        gate_mode="subgrid",
     ):
         super().__init__()
         if high_modes is None:
@@ -491,6 +810,14 @@ class HF_CFNO2d_small(nn.Module):
                     alpha_init=alpha_init,
                     high_gate_init=high_gate_init,
                     use_local_highpass=use_local_highpass,
+                    grid_spacing=grid_spacing,
+                    boundary_mode_h=boundary_mode_h,
+                    boundary_mode_w=boundary_mode_w,
+                    gate_threshold=gate_threshold,
+                    gate_slope=gate_slope,
+                    gate_subgrid_weight=gate_subgrid_weight,
+                    use_vorticity_gate=use_vorticity_gate,
+                    gate_mode=gate_mode,
                 )
                 for _ in range(depth)
             ]
@@ -514,6 +841,48 @@ class HF_CFNO2d_small(nn.Module):
         x = x.permute(0, 3, 1, 2)
         return x
 
+    def high_pass_gate_summary(self):
+        gates = [blk.last_gate for blk in self.blocks if getattr(blk, "last_gate", None) is not None]
+        if not gates:
+            return None
+        flat = torch.cat([g.reshape(-1) for g in gates])
+        return {
+            "mean": float(flat.mean().detach().cpu()),
+            "min": float(flat.min().detach().cpu()),
+            "max": float(flat.max().detach().cpu()),
+        }
+
+    def high_pass_gate_map(self):
+        gates = [blk.last_gate for blk in self.blocks if getattr(blk, "last_gate", None) is not None]
+        if not gates:
+            return None
+        return torch.stack([g[:, 0, :, :] for g in gates], dim=0).mean(dim=0)
+
+    def high_pass_spatial_gate_summary(self):
+        gates = [
+            blk.last_spatial_gate
+            for blk in self.blocks
+            if getattr(blk, "last_spatial_gate", None) is not None
+        ]
+        if not gates:
+            return None
+        flat = torch.cat([g.reshape(-1) for g in gates])
+        return {
+            "mean": float(flat.mean().detach().cpu()),
+            "min": float(flat.min().detach().cpu()),
+            "max": float(flat.max().detach().cpu()),
+        }
+
+    def high_pass_spatial_gate_map(self):
+        gates = [
+            blk.last_spatial_gate
+            for blk in self.blocks
+            if getattr(blk, "last_spatial_gate", None) is not None
+        ]
+        if not gates:
+            return None
+        return torch.stack([g[:, 0, :, :] for g in gates], dim=0).mean(dim=0)
+
 
 class HF_FNO2d_small(nn.Module):
     def __init__(
@@ -527,6 +896,14 @@ class HF_FNO2d_small(nn.Module):
         fourier_feature_bands=(1, 2, 4, 8),
         high_gate_init=-1.0,
         use_local_highpass=True,
+        grid_spacing=(1.0, 1.0),
+        boundary_mode_h="replicate",
+        boundary_mode_w="replicate",
+        gate_threshold=1.0,
+        gate_slope=2.0,
+        gate_subgrid_weight=1.0,
+        use_vorticity_gate=True,
+        gate_mode="subgrid",
     ):
         super().__init__()
         if high_modes is None:
@@ -542,6 +919,14 @@ class HF_FNO2d_small(nn.Module):
                     high_modes=high_modes,
                     high_gate_init=high_gate_init,
                     use_local_highpass=use_local_highpass,
+                    grid_spacing=grid_spacing,
+                    boundary_mode_h=boundary_mode_h,
+                    boundary_mode_w=boundary_mode_w,
+                    gate_threshold=gate_threshold,
+                    gate_slope=gate_slope,
+                    gate_subgrid_weight=gate_subgrid_weight,
+                    use_vorticity_gate=use_vorticity_gate,
+                    gate_mode=gate_mode,
                 )
                 for _ in range(depth)
             ]
@@ -564,3 +949,45 @@ class HF_FNO2d_small(nn.Module):
         x = self.fc2(x)
         x = x.permute(0, 3, 1, 2)
         return x
+
+    def high_pass_gate_summary(self):
+        gates = [blk.last_gate for blk in self.blocks if getattr(blk, "last_gate", None) is not None]
+        if not gates:
+            return None
+        flat = torch.cat([g.reshape(-1) for g in gates])
+        return {
+            "mean": float(flat.mean().detach().cpu()),
+            "min": float(flat.min().detach().cpu()),
+            "max": float(flat.max().detach().cpu()),
+        }
+
+    def high_pass_gate_map(self):
+        gates = [blk.last_gate for blk in self.blocks if getattr(blk, "last_gate", None) is not None]
+        if not gates:
+            return None
+        return torch.stack([g[:, 0, :, :] for g in gates], dim=0).mean(dim=0)
+
+    def high_pass_spatial_gate_summary(self):
+        gates = [
+            blk.last_spatial_gate
+            for blk in self.blocks
+            if getattr(blk, "last_spatial_gate", None) is not None
+        ]
+        if not gates:
+            return None
+        flat = torch.cat([g.reshape(-1) for g in gates])
+        return {
+            "mean": float(flat.mean().detach().cpu()),
+            "min": float(flat.min().detach().cpu()),
+            "max": float(flat.max().detach().cpu()),
+        }
+
+    def high_pass_spatial_gate_map(self):
+        gates = [
+            blk.last_spatial_gate
+            for blk in self.blocks
+            if getattr(blk, "last_spatial_gate", None) is not None
+        ]
+        if not gates:
+            return None
+        return torch.stack([g[:, 0, :, :] for g in gates], dim=0).mean(dim=0)
