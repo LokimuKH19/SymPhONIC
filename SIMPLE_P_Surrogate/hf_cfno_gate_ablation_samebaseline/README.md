@@ -69,7 +69,4 @@ AblationSpatialGateMean.png
 AblationMetricBars.png
 ```
 
-The archive `_aborted_detached_gate_bug_20260613_164051` is kept only as a
-debug record. It captured the pre-fix run where `SpatialGateMap` was detached
-before `L_gate`, so the alignment term was logged but not trainable. The
-official results in this folder were rerun after fixing that autograd path.
+
