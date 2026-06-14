@@ -1,0 +1,96 @@
+﻿[
+    {
+        "name":  "old_hf_cfno",
+        "description":  "Original HF-CFNO reproduction with legacy mixed rotor padding.",
+        "args":  [
+                     "--gate-mode",
+                     "legacy",
+                     "--boundary-mode",
+                     "legacy_mixed",
+                     "--high-gate-init",
+                     "-1.0",
+                     "--gate-alignment-weight",
+                     "0.0"
+                 ]
+    },
+    {
+        "name":  "new_gate_weak",
+        "description":  "Current subgrid vorticity gate.",
+        "args":  [
+                     "--gate-mode",
+                     "subgrid",
+                     "--boundary-mode",
+                     "replicate",
+                     "--high-gate-init",
+                     "-2.0",
+                     "--gate-threshold",
+                     "1.0",
+                     "--gate-slope",
+                     "2.0",
+                     "--gate-subgrid-weight",
+                     "1.0",
+                     "--gate-alignment-weight",
+                     "1e-2"
+                 ]
+    },
+    {
+        "name":  "new_gate_stronger",
+        "description":  "Stronger global cap and stronger spatial-gate alignment.",
+        "args":  [
+                     "--gate-mode",
+                     "subgrid",
+                     "--boundary-mode",
+                     "replicate",
+                     "--high-gate-init",
+                     "-1.0",
+                     "--gate-threshold",
+                     "1.0",
+                     "--gate-slope",
+                     "2.0",
+                     "--gate-subgrid-weight",
+                     "1.0",
+                     "--gate-alignment-weight",
+                     "0.05"
+                 ]
+    },
+    {
+        "name":  "new_gate_no_align",
+        "description":  "Subgrid vorticity gate without explicit physical alignment loss.",
+        "args":  [
+                     "--gate-mode",
+                     "subgrid",
+                     "--boundary-mode",
+                     "replicate",
+                     "--high-gate-init",
+                     "-2.0",
+                     "--gate-threshold",
+                     "1.0",
+                     "--gate-slope",
+                     "2.0",
+                     "--gate-subgrid-weight",
+                     "1.0",
+                     "--gate-alignment-weight",
+                     "0.0"
+                 ]
+    },
+    {
+        "name":  "new_gate_with_fuse_but_gated",
+        "description":  "Restores legacy fuse capacity, but gates all high/fuse residual by lambda*g.",
+        "args":  [
+                     "--gate-mode",
+                     "subgrid_gated_fuse",
+                     "--boundary-mode",
+                     "replicate",
+                     "--high-gate-init",
+                     "-2.0",
+                     "--gate-threshold",
+                     "1.0",
+                     "--gate-slope",
+                     "2.0",
+                     "--gate-subgrid-weight",
+                     "1.0",
+                     "--gate-alignment-weight",
+                     "1e-2"
+                 ]
+    }
+]
