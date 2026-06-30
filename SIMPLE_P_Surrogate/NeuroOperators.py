@@ -7,6 +7,100 @@ import numpy as np
 import random
 
 
+def _normalize_activation_name(name):
+    if name is None:
+        return "identity"
+    name = str(name).lower().replace("-", "_")
+    aliases = {
+        "none": "identity",
+        "linear": "identity",
+        "swish": "silu",
+        "leakyrelu": "leaky_relu",
+        "sin1x005": "sin1x_005",
+        "sin1x01": "sin1x_01",
+        "sin1x03": "sin1x_03",
+        "sin1x10": "sin1x_10",
+        "sin1x30": "sin1x_30",
+        "sin1x50": "sin1x_50",
+        "sin1xhard01": "sin1x_hard_01",
+        "sin1xhard50": "sin1x_hard_50",
+        "chirp10": "chirp_10",
+        "chirp30": "chirp_30",
+        "chirp50": "chirp_50",
+    }
+    return aliases.get(name, name)
+
+
+def _residual_sin1x(x, beta, eps=0.08, gamma=1.0):
+    # Regulated sin(1/x): bounded-amplitude residual injection with finite epsilon.
+    # Multiplying by x keeps the perturbation proportional to the feature scale.
+    x_safe = torch.clamp(x, min=-20.0, max=20.0)
+    phase = gamma / (torch.abs(x_safe) + float(eps))
+    return x + float(beta) * x_safe * torch.sin(phase)
+
+
+def _residual_chirp(x, beta, gamma=8.0):
+    x_safe = torch.clamp(x, min=-20.0, max=20.0)
+    return x + float(beta) * x_safe * torch.sin(float(gamma) * x_safe.pow(2))
+
+
+def apply_activation(x, name, negative_slope=0.05, snake_alpha=1.0):
+    name = _normalize_activation_name(name)
+    if name == "identity":
+        return x
+    if name == "gelu":
+        return F.gelu(x)
+    if name == "relu":
+        return F.relu(x)
+    if name == "silu":
+        return F.silu(x)
+    if name == "leaky_relu":
+        return F.leaky_relu(x, negative_slope=negative_slope)
+    if name == "tanh":
+        return torch.tanh(x)
+    if name == "softplus":
+        return F.softplus(x)
+    if name == "snake":
+        alpha = float(snake_alpha)
+        return x + torch.sin(alpha * x).pow(2) / max(alpha, 1e-6)
+    if name == "snake4":
+        return x + torch.sin(4.0 * x).pow(2) / 4.0
+    if name == "snake8":
+        return x + torch.sin(8.0 * x).pow(2) / 8.0
+    if name == "chirp_01":
+        return _residual_chirp(x, beta=0.01, gamma=8.0)
+    if name == "chirp_03":
+        return _residual_chirp(x, beta=0.03, gamma=8.0)
+    if name == "chirp_10":
+        return _residual_chirp(x, beta=0.10, gamma=8.0)
+    if name == "chirp_30":
+        return _residual_chirp(x, beta=0.30, gamma=8.0)
+    if name == "chirp_50":
+        return _residual_chirp(x, beta=0.50, gamma=8.0)
+    if name == "sin1x_005":
+        return _residual_sin1x(x, beta=0.005, eps=0.08, gamma=1.0)
+    if name == "sin1x_01":
+        return _residual_sin1x(x, beta=0.01, eps=0.08, gamma=1.0)
+    if name == "sin1x_03":
+        return _residual_sin1x(x, beta=0.03, eps=0.08, gamma=1.0)
+    if name == "sin1x_10":
+        return _residual_sin1x(x, beta=0.10, eps=0.08, gamma=1.0)
+    if name == "sin1x_30":
+        return _residual_sin1x(x, beta=0.30, eps=0.08, gamma=1.0)
+    if name == "sin1x_50":
+        return _residual_sin1x(x, beta=0.50, eps=0.08, gamma=1.0)
+    if name == "sin1x_hard_01":
+        return _residual_sin1x(x, beta=0.01, eps=0.035, gamma=1.0)
+    if name == "sin1x_hard_50":
+        return _residual_sin1x(x, beta=0.50, eps=0.035, gamma=1.0)
+    raise ValueError(
+        "activation must be one of: identity, gelu, relu, silu, leaky_relu, "
+        "tanh, softplus, snake, snake4, snake8, chirp_01, chirp_03, "
+        "chirp_10, chirp_30, chirp_50, sin1x_005, sin1x_01, sin1x_03, "
+        "sin1x_10, sin1x_30, sin1x_50, sin1x_hard_01, sin1x_hard_50."
+    )
+
+
 def seed_everything(seed):
     torch.set_default_dtype(torch.float32)
     torch.set_printoptions(precision=16)
@@ -82,6 +176,11 @@ def _softplus_inverse(value):
     if value <= 0.0:
         raise ValueError("softplus inverse expects a positive value.")
     return math.log(math.expm1(value))
+
+
+def _logit_from_probability(value):
+    value = min(max(float(value), 1e-6), 1.0 - 1e-6)
+    return math.log(value / (1.0 - value))
 
 
 # -------------------------
@@ -226,9 +325,25 @@ class MultiBandSpectralConv2d(nn.Module):
             self.weights_high_neg = nn.Parameter(
                 scale * torch.randn(in_channels, out_channels, self.low_modes, self.high_modes, dtype=torch.cfloat)
             )
+            self.weights_high_y_pos = nn.Parameter(
+                scale * torch.randn(in_channels, out_channels, self.high_modes, self.low_modes, dtype=torch.cfloat)
+            )
+            self.weights_high_y_neg = nn.Parameter(
+                scale * torch.randn(in_channels, out_channels, self.high_modes, self.low_modes, dtype=torch.cfloat)
+            )
+            self.weights_high_xy_pos = nn.Parameter(
+                scale * torch.randn(in_channels, out_channels, self.high_modes, self.high_modes, dtype=torch.cfloat)
+            )
+            self.weights_high_xy_neg = nn.Parameter(
+                scale * torch.randn(in_channels, out_channels, self.high_modes, self.high_modes, dtype=torch.cfloat)
+            )
         else:
             self.register_parameter("weights_high_pos", None)
             self.register_parameter("weights_high_neg", None)
+            self.register_parameter("weights_high_y_pos", None)
+            self.register_parameter("weights_high_y_neg", None)
+            self.register_parameter("weights_high_xy_pos", None)
+            self.register_parameter("weights_high_xy_neg", None)
 
     def compl_mul2d(self, input, weights):
         return torch.einsum("bixy,ioxy->boxy", input, weights)
@@ -241,19 +356,25 @@ class MultiBandSpectralConv2d(nn.Module):
 
         mh = min(self.low_modes, H)
         mw = min(self.low_modes, freq_w)
-        out_ft[:, :, :mh, :mw] = self.compl_mul2d(
-            x_ft[:, :, :mh, :mw],
-            self.weights_low_pos[:, :, :mh, :mw],
-        )
-        if mh > 0:
+        if mh > 0 and mw > 0:
+            out_ft[:, :, :mh, :mw] = self.compl_mul2d(
+                x_ft[:, :, :mh, :mw],
+                self.weights_low_pos[:, :, :mh, :mw],
+            )
             out_ft[:, :, -mh:, :mw] = self.compl_mul2d(
                 x_ft[:, :, -mh:, :mw],
                 self.weights_low_neg[:, :, :mh, :mw],
             )
 
-        high_available = max(freq_w - mw, 0)
-        hw = min(self.high_modes, high_available)
-        if hw > 0:
+        x_high_available = max(freq_w - mw, 0)
+        hw = min(self.high_modes, x_high_available)
+        y_pos_end = H // 2 + 1
+        y_neg_start = H // 2 + 1
+        y_pos_available = max(y_pos_end - mh, 0)
+        y_neg_available = max((H - mh) - y_neg_start, 0)
+        hy = min(self.high_modes, y_pos_available, y_neg_available)
+
+        if mh > 0 and hw > 0:
             out_ft[:, :, :mh, -hw:] = out_ft[:, :, :mh, -hw:] + self.compl_mul2d(
                 x_ft[:, :, :mh, -hw:],
                 self.weights_high_pos[:, :, :mh, :hw],
@@ -262,6 +383,27 @@ class MultiBandSpectralConv2d(nn.Module):
                 x_ft[:, :, -mh:, -hw:],
                 self.weights_high_neg[:, :, :mh, :hw],
             )
+        if hy > 0:
+            y_pos_start = y_pos_end - hy
+            y_neg_end = y_neg_start + hy
+            if mw > 0:
+                out_ft[:, :, y_pos_start:y_pos_end, :mw] = out_ft[:, :, y_pos_start:y_pos_end, :mw] + self.compl_mul2d(
+                    x_ft[:, :, y_pos_start:y_pos_end, :mw],
+                    self.weights_high_y_pos[:, :, :hy, :mw],
+                )
+                out_ft[:, :, y_neg_start:y_neg_end, :mw] = out_ft[:, :, y_neg_start:y_neg_end, :mw] + self.compl_mul2d(
+                    x_ft[:, :, y_neg_start:y_neg_end, :mw],
+                    self.weights_high_y_neg[:, :, :hy, :mw],
+                )
+            if hw > 0:
+                out_ft[:, :, y_pos_start:y_pos_end, -hw:] = out_ft[:, :, y_pos_start:y_pos_end, -hw:] + self.compl_mul2d(
+                    x_ft[:, :, y_pos_start:y_pos_end, -hw:],
+                    self.weights_high_xy_pos[:, :, :hy, :hw],
+                )
+                out_ft[:, :, y_neg_start:y_neg_end, -hw:] = out_ft[:, :, y_neg_start:y_neg_end, -hw:] + self.compl_mul2d(
+                    x_ft[:, :, y_neg_start:y_neg_end, -hw:],
+                    self.weights_high_xy_neg[:, :, :hy, :hw],
+                )
 
         return torch.fft.irfft2(out_ft, s=(H, W), norm="forward")
 
@@ -290,7 +432,14 @@ class FourierFeatureGrid2d(nn.Module):
 
 
 class LocalHighPassBlock2d(nn.Module):
-    def __init__(self, channels, kernel_size=3, boundary_mode_h="replicate", boundary_mode_w="replicate"):
+    def __init__(
+        self,
+        channels,
+        kernel_size=3,
+        boundary_mode_h="replicate",
+        boundary_mode_w="replicate",
+        activation="gelu",
+    ):
         super().__init__()
         kernel_size = int(kernel_size)
         if kernel_size % 2 == 0:
@@ -299,6 +448,7 @@ class LocalHighPassBlock2d(nn.Module):
         self.pad = kernel_size // 2
         self.boundary_mode_h = boundary_mode_h
         self.boundary_mode_w = boundary_mode_w
+        self.activation = _normalize_activation_name(activation)
         self.depthwise = nn.Conv2d(channels, channels, kernel_size, groups=channels, padding=0)
         self.pointwise = nn.Conv2d(channels, channels, 1)
         self.mix = nn.Conv2d(channels, channels, 1)
@@ -325,7 +475,7 @@ class LocalHighPassBlock2d(nn.Module):
                 pad_mode_w=self.boundary_mode_w,
             )
         )
-        y = F.gelu(self.pointwise(y))
+        y = apply_activation(self.pointwise(y), self.activation)
         return self.mix(y)
 
 
@@ -442,11 +592,18 @@ class HFCFNOBlock(nn.Module):
         gate_subgrid_weight=1.0,
         use_vorticity_gate=True,
         gate_mode="subgrid",
+        force_high_gate=False,
+        low_branch_scale=1.0,
+        learn_low_branch_gate=False,
+        local_activation="gelu",
     ):
         super().__init__()
         self.gate_mode = str(gate_mode).lower()
         if self.gate_mode not in {"subgrid", "legacy", "subgrid_gated_fuse"}:
             raise ValueError("gate_mode must be 'subgrid', 'legacy', or 'subgrid_gated_fuse'.")
+        self.force_high_gate = bool(force_high_gate)
+        self.learn_low_branch_gate = bool(learn_low_branch_gate)
+        self.low_branch_scale = min(max(float(low_branch_scale), 0.0), 1.0)
         self.low_cfno = CFNOBlock(channels, channels, modes, cheb_modes, alpha_init=alpha_init)
         self.band_spectral = MultiBandSpectralConv2d(channels, channels, modes, high_modes=high_modes)
         self.use_local_highpass = bool(use_local_highpass)
@@ -455,6 +612,7 @@ class HFCFNOBlock(nn.Module):
                 channels,
                 boundary_mode_h=boundary_mode_h,
                 boundary_mode_w=boundary_mode_w,
+                activation=local_activation,
             )
             if self.use_local_highpass
             else None
@@ -496,22 +654,42 @@ class HFCFNOBlock(nn.Module):
                 else None
             )
         self.high_gate = nn.Parameter(torch.tensor(float(high_gate_init)))
+        if self.learn_low_branch_gate:
+            self.low_gate = nn.Parameter(torch.tensor(_logit_from_probability(self.low_branch_scale)))
+        else:
+            self.register_buffer("low_gate", torch.tensor(self.low_branch_scale, dtype=torch.float32))
         self.last_gate = None
         self.last_spatial_gate = None
+        self.last_low_gate = None
+
+    def _high_gate_value(self, x):
+        if self.force_high_gate:
+            return x.new_tensor(1.0)
+        return torch.sigmoid(self.high_gate)
+
+    def _low_gate_value(self, x):
+        if self.learn_low_branch_gate:
+            gate = torch.sigmoid(self.low_gate)
+        else:
+            gate = self.low_gate.to(device=x.device, dtype=x.dtype)
+        self.last_low_gate = gate.detach()
+        return gate
 
     def forward(self, x):
         low = self.low_cfno(x)
+        low_gate = self._low_gate_value(x)
+        gated_low = low_gate * low
         band = self.band_spectral(x)
         local = self.local_high(x) if self.local_high is not None else torch.zeros_like(band)
         if self.gate_mode == "legacy":
-            gate = torch.sigmoid(self.high_gate)
-            fused = self.fuse(torch.cat([low, band, local], dim=1))
+            gate = self._high_gate_value(x)
+            fused = self.fuse(torch.cat([gated_low, band, local], dim=1))
             gate_map = gate * torch.ones_like(low[:, :1, :, :])
             self.last_gate = gate_map.detach()
             self.last_spatial_gate = torch.ones_like(gate_map).detach()
-            return low + gate * (band + local) + fused
+            return gated_low + gate * (band + local) + fused
         if self.gate_mode == "subgrid_gated_fuse":
-            fused = self.fuse(torch.cat([low, band, local], dim=1))
+            fused = self.fuse(torch.cat([gated_low, band, local], dim=1))
             raw_high = band + local + fused
         else:
             raw_high = self.high_fuse(torch.cat([band, local], dim=1))
@@ -519,10 +697,10 @@ class HFCFNOBlock(nn.Module):
             spatial_gate = torch.ones_like(raw_high[:, :1, :, :])
         else:
             spatial_gate = self.vorticity_gate(x)
-        gate = torch.sigmoid(self.high_gate) * spatial_gate
+        gate = self._high_gate_value(x) * spatial_gate
         self.last_gate = gate.detach()
         self.last_spatial_gate = spatial_gate
-        return low + gate * raw_high
+        return gated_low + gate * raw_high
 
 
 class HFFNOBlock(nn.Module):
@@ -541,11 +719,18 @@ class HFFNOBlock(nn.Module):
         gate_subgrid_weight=1.0,
         use_vorticity_gate=True,
         gate_mode="subgrid",
+        force_high_gate=False,
+        low_branch_scale=1.0,
+        learn_low_branch_gate=False,
+        local_activation="gelu",
     ):
         super().__init__()
         self.gate_mode = str(gate_mode).lower()
         if self.gate_mode not in {"subgrid", "legacy", "subgrid_gated_fuse"}:
             raise ValueError("gate_mode must be 'subgrid', 'legacy', or 'subgrid_gated_fuse'.")
+        self.force_high_gate = bool(force_high_gate)
+        self.learn_low_branch_gate = bool(learn_low_branch_gate)
+        self.low_branch_scale = min(max(float(low_branch_scale), 0.0), 1.0)
         self.low_fno = SpectralConv2d(channels, channels, modes)
         self.band_spectral = MultiBandSpectralConv2d(channels, channels, modes, high_modes=high_modes)
         self.use_local_highpass = bool(use_local_highpass)
@@ -554,6 +739,7 @@ class HFFNOBlock(nn.Module):
                 channels,
                 boundary_mode_h=boundary_mode_h,
                 boundary_mode_w=boundary_mode_w,
+                activation=local_activation,
             )
             if self.use_local_highpass
             else None
@@ -595,22 +781,42 @@ class HFFNOBlock(nn.Module):
                 else None
             )
         self.high_gate = nn.Parameter(torch.tensor(float(high_gate_init)))
+        if self.learn_low_branch_gate:
+            self.low_gate = nn.Parameter(torch.tensor(_logit_from_probability(self.low_branch_scale)))
+        else:
+            self.register_buffer("low_gate", torch.tensor(self.low_branch_scale, dtype=torch.float32))
         self.last_gate = None
         self.last_spatial_gate = None
+        self.last_low_gate = None
+
+    def _high_gate_value(self, x):
+        if self.force_high_gate:
+            return x.new_tensor(1.0)
+        return torch.sigmoid(self.high_gate)
+
+    def _low_gate_value(self, x):
+        if self.learn_low_branch_gate:
+            gate = torch.sigmoid(self.low_gate)
+        else:
+            gate = self.low_gate.to(device=x.device, dtype=x.dtype)
+        self.last_low_gate = gate.detach()
+        return gate
 
     def forward(self, x):
         low = self.low_fno(x)
+        low_gate = self._low_gate_value(x)
+        gated_low = low_gate * low
         band = self.band_spectral(x)
         local = self.local_high(x) if self.local_high is not None else torch.zeros_like(band)
         if self.gate_mode == "legacy":
-            gate = torch.sigmoid(self.high_gate)
-            fused = self.fuse(torch.cat([low, band, local], dim=1))
+            gate = self._high_gate_value(x)
+            fused = self.fuse(torch.cat([gated_low, band, local], dim=1))
             gate_map = gate * torch.ones_like(low[:, :1, :, :])
             self.last_gate = gate_map.detach()
             self.last_spatial_gate = torch.ones_like(gate_map).detach()
-            return low + gate * (band + local) + fused
+            return gated_low + gate * (band + local) + fused
         if self.gate_mode == "subgrid_gated_fuse":
-            fused = self.fuse(torch.cat([low, band, local], dim=1))
+            fused = self.fuse(torch.cat([gated_low, band, local], dim=1))
             raw_high = band + local + fused
         else:
             raw_high = self.high_fuse(torch.cat([band, local], dim=1))
@@ -618,10 +824,10 @@ class HFFNOBlock(nn.Module):
             spatial_gate = torch.ones_like(raw_high[:, :1, :, :])
         else:
             spatial_gate = self.vorticity_gate(x)
-        gate = torch.sigmoid(self.high_gate) * spatial_gate
+        gate = self._high_gate_value(x) * spatial_gate
         self.last_gate = gate.detach()
         self.last_spatial_gate = spatial_gate
-        return low + gate * raw_high
+        return gated_low + gate * raw_high
 
 
 # -------------------------
@@ -671,8 +877,12 @@ class FNO2d_small(nn.Module):
         input_features=1,
         output_features=1,
         fourier_feature_bands=None,
+        block_activation="identity",
+        head_activation="relu",
     ):
         super().__init__()
+        self.block_activation = _normalize_activation_name(block_activation)
+        self.head_activation = _normalize_activation_name(head_activation)
         self.feature_grid = (
             FourierFeatureGrid2d(fourier_feature_bands)
             if fourier_feature_bands
@@ -694,9 +904,9 @@ class FNO2d_small(nn.Module):
         x = x.permute(0, 3, 1, 2)  # [B,width,H,W]
         for blk, w in zip(self.blocks, self.wconvs):
             y = blk(x)
-            x = y + w(x)
+            x = apply_activation(y + w(x), self.block_activation)
         x = x.permute(0, 2, 3, 1)
-        x = torch.relu(self.fc1(x))
+        x = apply_activation(self.fc1(x), self.head_activation)
         x = self.fc2(x)
         x = x.permute(0, 3, 1, 2)
         return x
@@ -704,8 +914,19 @@ class FNO2d_small(nn.Module):
 
 # CNO model: use ChebSpectralConv2d blocks instead of Fourier
 class CNO2d_small(nn.Module):
-    def __init__(self, cheb_modes=(8, 8), width=16, depth=3, input_features=1, output_features=1):
+    def __init__(
+        self,
+        cheb_modes=(8, 8),
+        width=16,
+        depth=3,
+        input_features=1,
+        output_features=1,
+        block_activation="identity",
+        head_activation="relu",
+    ):
         super().__init__()
+        self.block_activation = _normalize_activation_name(block_activation)
+        self.head_activation = _normalize_activation_name(head_activation)
         self.fc0 = nn.Linear(input_features, width)
         self.blocks = nn.ModuleList(
             [ChebSpectralConv2d(width, width, cheb_modes[0], cheb_modes[1]) for _ in range(depth)])
@@ -720,9 +941,9 @@ class CNO2d_small(nn.Module):
         x = x.permute(0, 3, 1, 2)
         for blk, w in zip(self.blocks, self.wconvs):
             y = blk(x)
-            x = y + w(x)
+            x = apply_activation(y + w(x), self.block_activation)
         x = x.permute(0, 2, 3, 1)
-        x = torch.relu(self.fc1(x))
+        x = apply_activation(self.fc1(x), self.head_activation)
         x = self.fc2(x)
         x = x.permute(0, 3, 1, 2)
         return x
@@ -740,8 +961,12 @@ class CFNO2d_small(nn.Module):
         input_features=1,
         output_features=1,
         fourier_feature_bands=None,
+        block_activation="identity",
+        head_activation="relu",
     ):
         super().__init__()
+        self.block_activation = _normalize_activation_name(block_activation)
+        self.head_activation = _normalize_activation_name(head_activation)
         self.feature_grid = (
             FourierFeatureGrid2d(fourier_feature_bands)
             if fourier_feature_bands
@@ -763,9 +988,9 @@ class CFNO2d_small(nn.Module):
         x = x.permute(0, 3, 1, 2)
         for blk, w in zip(self.blocks, self.wconvs):
             y = blk(x)
-            x = y + w(x)
+            x = apply_activation(y + w(x), self.block_activation)
         x = x.permute(0, 2, 3, 1)
-        x = torch.relu(self.fc1(x))
+        x = apply_activation(self.fc1(x), self.head_activation)
         x = self.fc2(x)
         x = x.permute(0, 3, 1, 2)
         return x
@@ -793,8 +1018,16 @@ class HF_CFNO2d_small(nn.Module):
         gate_subgrid_weight=1.0,
         use_vorticity_gate=True,
         gate_mode="subgrid",
+        force_high_gate=False,
+        low_branch_scale=1.0,
+        learn_low_branch_gate=False,
+        block_activation="gelu",
+        head_activation="gelu",
+        local_activation="gelu",
     ):
         super().__init__()
+        self.block_activation = _normalize_activation_name(block_activation)
+        self.head_activation = _normalize_activation_name(head_activation)
         if high_modes is None:
             high_modes = max(2, int(modes) // 2)
         self.feature_grid = FourierFeatureGrid2d(fourier_feature_bands)
@@ -818,6 +1051,10 @@ class HF_CFNO2d_small(nn.Module):
                     gate_subgrid_weight=gate_subgrid_weight,
                     use_vorticity_gate=use_vorticity_gate,
                     gate_mode=gate_mode,
+                    force_high_gate=force_high_gate,
+                    low_branch_scale=low_branch_scale,
+                    learn_low_branch_gate=learn_low_branch_gate,
+                    local_activation=local_activation,
                 )
                 for _ in range(depth)
             ]
@@ -834,9 +1071,9 @@ class HF_CFNO2d_small(nn.Module):
         x = x.permute(0, 3, 1, 2)
         for blk, w in zip(self.blocks, self.wconvs):
             y = blk(x)
-            x = F.gelu(y + w(x))
+            x = apply_activation(y + w(x), self.block_activation)
         x = x.permute(0, 2, 3, 1)
-        x = F.gelu(self.fc1(x))
+        x = apply_activation(self.fc1(x), self.head_activation)
         x = self.fc2(x)
         x = x.permute(0, 3, 1, 2)
         return x
@@ -883,6 +1120,17 @@ class HF_CFNO2d_small(nn.Module):
             return None
         return torch.stack([g[:, 0, :, :] for g in gates], dim=0).mean(dim=0)
 
+    def low_branch_gate_summary(self):
+        gates = [blk.last_low_gate for blk in self.blocks if getattr(blk, "last_low_gate", None) is not None]
+        if not gates:
+            return None
+        flat = torch.cat([g.reshape(-1) for g in gates])
+        return {
+            "mean": float(flat.mean().detach().cpu()),
+            "min": float(flat.min().detach().cpu()),
+            "max": float(flat.max().detach().cpu()),
+        }
+
 
 class HF_FNO2d_small(nn.Module):
     def __init__(
@@ -904,8 +1152,16 @@ class HF_FNO2d_small(nn.Module):
         gate_subgrid_weight=1.0,
         use_vorticity_gate=True,
         gate_mode="subgrid",
+        force_high_gate=False,
+        low_branch_scale=1.0,
+        learn_low_branch_gate=False,
+        block_activation="gelu",
+        head_activation="gelu",
+        local_activation="gelu",
     ):
         super().__init__()
+        self.block_activation = _normalize_activation_name(block_activation)
+        self.head_activation = _normalize_activation_name(head_activation)
         if high_modes is None:
             high_modes = max(2, int(modes) // 2)
         self.feature_grid = FourierFeatureGrid2d(fourier_feature_bands)
@@ -927,6 +1183,10 @@ class HF_FNO2d_small(nn.Module):
                     gate_subgrid_weight=gate_subgrid_weight,
                     use_vorticity_gate=use_vorticity_gate,
                     gate_mode=gate_mode,
+                    force_high_gate=force_high_gate,
+                    low_branch_scale=low_branch_scale,
+                    learn_low_branch_gate=learn_low_branch_gate,
+                    local_activation=local_activation,
                 )
                 for _ in range(depth)
             ]
@@ -943,9 +1203,9 @@ class HF_FNO2d_small(nn.Module):
         x = x.permute(0, 3, 1, 2)
         for blk, w in zip(self.blocks, self.wconvs):
             y = blk(x)
-            x = F.gelu(y + w(x))
+            x = apply_activation(y + w(x), self.block_activation)
         x = x.permute(0, 2, 3, 1)
-        x = F.gelu(self.fc1(x))
+        x = apply_activation(self.fc1(x), self.head_activation)
         x = self.fc2(x)
         x = x.permute(0, 3, 1, 2)
         return x
@@ -966,6 +1226,17 @@ class HF_FNO2d_small(nn.Module):
         if not gates:
             return None
         return torch.stack([g[:, 0, :, :] for g in gates], dim=0).mean(dim=0)
+
+    def low_branch_gate_summary(self):
+        gates = [blk.last_low_gate for blk in self.blocks if getattr(blk, "last_low_gate", None) is not None]
+        if not gates:
+            return None
+        flat = torch.cat([g.reshape(-1) for g in gates])
+        return {
+            "mean": float(flat.mean().detach().cpu()),
+            "min": float(flat.min().detach().cpu()),
+            "max": float(flat.max().detach().cpu()),
+        }
 
     def high_pass_spatial_gate_summary(self):
         gates = [
