@@ -1,0 +1,23 @@
+{
+  "root": "D:\\Ansys\\SymPhONIC\\OtherPDEs\\LegacyHF_PDE_Benchmark_PINO_20260705",
+  "models_processed": 68,
+  "cases_processed": 17,
+  "figures_written": 677,
+  "errors": [],
+  "font": "Times New Roman",
+  "axis_label_size": 12,
+  "legend_and_colorbar_size": 10.5,
+  "primary_palette": [
+    "#3c7fb1",
+    "#e64532",
+    "#44a05c",
+    "#b53289"
+  ],
+  "secondary_palette": [
+    "#90bfd5",
+    "#f5a65b",
+    "#a0d292",
+    "#f296ac"
+  ],
+  "loss_normalization": "per-model first-five all-loss maximum; case comparisons use the largest model scale"
+}

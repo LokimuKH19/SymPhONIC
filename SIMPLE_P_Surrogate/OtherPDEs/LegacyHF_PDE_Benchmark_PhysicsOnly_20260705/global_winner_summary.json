@@ -1,0 +1,172 @@
+[
+  {
+    "pde": "AllenCahn",
+    "case": "Steady1D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.6442315578460693,
+    "params": 491929,
+    "width": 7,
+    "best_epoch": 135,
+    "residual_rms": 0.04081472381949425
+  },
+  {
+    "pde": "AllenCahn",
+    "case": "Steady2D",
+    "winner": "CFNO",
+    "test_rel_l2": 0.4157882332801819,
+    "params": 489533,
+    "width": 25,
+    "best_epoch": 347,
+    "residual_rms": 0.017131933942437172
+  },
+  {
+    "pde": "AllenCahn",
+    "case": "Transient1D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.0447072833776474,
+    "params": 491936,
+    "width": 7,
+    "best_epoch": 1167,
+    "residual_rms": 0.024568825960159302
+  },
+  {
+    "pde": "Burgers",
+    "case": "Steady1D",
+    "winner": "FNO",
+    "test_rel_l2": 1.471397876739502,
+    "params": 498237,
+    "width": 31,
+    "best_epoch": 416,
+    "residual_rms": 0.6924750804901123
+  },
+  {
+    "pde": "Burgers",
+    "case": "Steady2D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 1.0092997550964355,
+    "params": 491929,
+    "width": 7,
+    "best_epoch": 267,
+    "residual_rms": 0.1573183238506317
+  },
+  {
+    "pde": "Burgers",
+    "case": "Transient1D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.03215140104293823,
+    "params": 478968,
+    "width": 7,
+    "best_epoch": 1198,
+    "residual_rms": 0.25458598136901855
+  },
+  {
+    "pde": "KdV",
+    "case": "HighNonlinear_Steady1D",
+    "winner": "FNO",
+    "test_rel_l2": 0.8747962117195129,
+    "params": 511458,
+    "width": 21,
+    "best_epoch": 480,
+    "residual_rms": 39.10285568237305
+  },
+  {
+    "pde": "KdV",
+    "case": "HighNonlinear_Steady2D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.6725559234619141,
+    "params": 563262,
+    "width": 5,
+    "best_epoch": 1196,
+    "residual_rms": 23.950469970703125
+  },
+  {
+    "pde": "KdV",
+    "case": "Steady1D",
+    "winner": "CFNO",
+    "test_rel_l2": 1.881256341934204,
+    "params": 489533,
+    "width": 25,
+    "best_epoch": 252,
+    "residual_rms": 0.7580402493476868
+  },
+  {
+    "pde": "KdV",
+    "case": "Steady2D",
+    "winner": "FNO",
+    "test_rel_l2": 1.443986415863037,
+    "params": 498237,
+    "width": 31,
+    "best_epoch": 499,
+    "residual_rms": 0.5543757081031799
+  },
+  {
+    "pde": "KdV",
+    "case": "Transient1D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.09684199094772339,
+    "params": 491936,
+    "width": 7,
+    "best_epoch": 1192,
+    "residual_rms": 15.223215103149414
+  },
+  {
+    "pde": "Poisson",
+    "case": "Steady1D",
+    "winner": "CFNO",
+    "test_rel_l2": 0.23345229029655457,
+    "params": 489533,
+    "width": 25,
+    "best_epoch": 786,
+    "residual_rms": 5.855461120605469
+  },
+  {
+    "pde": "Poisson",
+    "case": "Steady2D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.008874381892383099,
+    "params": 491929,
+    "width": 7,
+    "best_epoch": 1198,
+    "residual_rms": 1.6504546403884888
+  },
+  {
+    "pde": "ReactionDiffusion",
+    "case": "Steady1D",
+    "winner": "FNO",
+    "test_rel_l2": 0.8555522561073303,
+    "params": 498237,
+    "width": 31,
+    "best_epoch": 79,
+    "residual_rms": 0.37639740109443665
+  },
+  {
+    "pde": "ReactionDiffusion",
+    "case": "Steady2D",
+    "winner": "CFNO",
+    "test_rel_l2": 0.6169027090072632,
+    "params": 489533,
+    "width": 25,
+    "best_epoch": 32,
+    "residual_rms": 0.06400583684444427
+  },
+  {
+    "pde": "ReactionDiffusion",
+    "case": "Transient1D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.012260831892490387,
+    "params": 491936,
+    "width": 7,
+    "best_epoch": 1190,
+    "residual_rms": 0.1084122583270073
+  },
+  {
+    "pde": "Wave",
+    "case": "Transient1D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.44727614521980286,
+    "params": 491943,
+    "width": 7,
+    "best_epoch": 1199,
+    "residual_rms": 59.05707931518555
+  }
+]
