@@ -1,0 +1,56 @@
+
+=== [1/15] Poisson_Steady1D on cuda ===
+Poisson_Steady1D/FNO epoch 0001/1200 mode=hybrid loss=3.804e-01/3.644e-01 test_loss=4.021e-01 mse_val=2.959e-01 pde_val=1.370e+00 state_rel=9.868e-01
+Poisson_Steady1D/FNO epoch 0100/1200 mode=hybrid loss=5.672e-02/6.481e-02 test_loss=1.057e-01 mse_val=4.235e-02 pde_val=4.492e-01 state_rel=3.958e-01
+Poisson_Steady1D/FNO epoch 0200/1200 mode=hybrid loss=3.949e-02/7.249e-02 test_loss=1.477e-01 mse_val=3.813e-02 pde_val=6.872e-01 state_rel=3.584e-01
+Poisson_Steady1D/FNO epoch 0300/1200 mode=hybrid loss=2.062e-02/7.090e-02 test_loss=1.721e-01 mse_val=2.416e-02 pde_val=9.349e-01 state_rel=2.823e-01
+Poisson_Steady1D/FNO epoch 0400/1200 mode=hybrid loss=1.539e-02/8.323e-02 test_loss=1.762e-01 mse_val=2.082e-02 pde_val=1.248e+00 state_rel=2.652e-01
+Poisson_Steady1D/FNO epoch 0500/1200 mode=hybrid loss=1.304e-02/8.988e-02 test_loss=1.889e-01 mse_val=2.022e-02 pde_val=1.393e+00 state_rel=2.577e-01
+Poisson_Steady1D/FNO epoch 0600/1200 mode=hybrid loss=1.155e-02/9.237e-02 test_loss=1.931e-01 mse_val=1.930e-02 pde_val=1.461e+00 state_rel=2.545e-01
+Poisson_Steady1D/FNO epoch 0700/1200 mode=hybrid loss=1.066e-02/9.624e-02 test_loss=2.050e-01 mse_val=1.878e-02 pde_val=1.549e+00 state_rel=2.534e-01
+Poisson_Steady1D/FNO epoch 0800/1200 mode=hybrid loss=1.009e-02/9.960e-02 test_loss=2.097e-01 mse_val=1.900e-02 pde_val=1.612e+00 state_rel=2.541e-01
+Poisson_Steady1D/FNO epoch 0900/1200 mode=hybrid loss=9.823e-03/1.006e-01 test_loss=2.120e-01 mse_val=1.876e-02 pde_val=1.636e+00 state_rel=2.530e-01
+Poisson_Steady1D/FNO epoch 1000/1200 mode=hybrid loss=9.684e-03/1.012e-01 test_loss=2.140e-01 mse_val=1.866e-02 pde_val=1.651e+00 state_rel=2.523e-01
+Poisson_Steady1D/FNO epoch 1100/1200 mode=hybrid loss=9.593e-03/1.020e-01 test_loss=2.168e-01 mse_val=1.880e-02 pde_val=1.664e+00 state_rel=2.529e-01
+Poisson_Steady1D/FNO epoch 1200/1200 mode=hybrid loss=9.601e-03/1.022e-01 test_loss=2.169e-01 mse_val=1.871e-02 pde_val=1.669e+00 state_rel=2.528e-01
+Poisson_Steady1D/CFNO epoch 0001/1200 mode=hybrid loss=3.593e-01/3.648e-01 test_loss=3.799e-01 mse_val=2.954e-01 pde_val=1.388e+00 state_rel=1.009e+00
+Poisson_Steady1D/CFNO epoch 0100/1200 mode=hybrid loss=2.467e-02/2.521e-02 test_loss=5.793e-02 mse_val=1.737e-02 pde_val=1.567e-01 state_rel=2.428e-01
+Poisson_Steady1D/CFNO epoch 0200/1200 mode=hybrid loss=1.420e-02/3.227e-02 test_loss=5.393e-02 mse_val=2.206e-02 pde_val=2.042e-01 state_rel=2.735e-01
+Poisson_Steady1D/CFNO epoch 0300/1200 mode=hybrid loss=9.406e-03/3.354e-02 test_loss=4.225e-02 mse_val=2.008e-02 pde_val=2.691e-01 state_rel=2.609e-01
+Poisson_Steady1D/CFNO epoch 0400/1200 mode=hybrid loss=8.274e-03/3.749e-02 test_loss=3.533e-02 mse_val=1.877e-02 pde_val=3.743e-01 state_rel=2.548e-01
+Poisson_Steady1D/CFNO epoch 0500/1200 mode=hybrid loss=5.212e-03/4.209e-02 test_loss=3.661e-02 mse_val=1.756e-02 pde_val=4.906e-01 state_rel=2.483e-01
+Poisson_Steady1D/CFNO epoch 0600/1200 mode=hybrid loss=4.420e-03/4.169e-02 test_loss=3.678e-02 mse_val=1.724e-02 pde_val=4.889e-01 state_rel=2.477e-01
+Poisson_Steady1D/CFNO epoch 0700/1200 mode=hybrid loss=4.066e-03/4.332e-02 test_loss=3.910e-02 mse_val=1.627e-02 pde_val=5.410e-01 state_rel=2.420e-01
+Poisson_Steady1D/CFNO epoch 0800/1200 mode=hybrid loss=3.487e-03/4.389e-02 test_loss=4.176e-02 mse_val=1.643e-02 pde_val=5.492e-01 state_rel=2.421e-01
+Poisson_Steady1D/CFNO epoch 0900/1200 mode=hybrid loss=3.266e-03/4.359e-02 test_loss=4.199e-02 mse_val=1.610e-02 pde_val=5.498e-01 state_rel=2.397e-01
+Poisson_Steady1D/CFNO epoch 1000/1200 mode=hybrid loss=3.103e-03/4.426e-02 test_loss=4.318e-02 mse_val=1.591e-02 pde_val=5.670e-01 state_rel=2.380e-01
+Poisson_Steady1D/CFNO epoch 1100/1200 mode=hybrid loss=2.989e-03/4.450e-02 test_loss=4.295e-02 mse_val=1.580e-02 pde_val=5.740e-01 state_rel=2.371e-01
+Poisson_Steady1D/CFNO epoch 1200/1200 mode=hybrid loss=2.931e-03/4.453e-02 test_loss=4.300e-02 mse_val=1.577e-02 pde_val=5.752e-01 state_rel=2.369e-01
+Poisson_Steady1D/HF_FNO epoch 0001/1200 mode=hybrid loss=3.553e-01/3.687e-01 test_loss=3.855e-01 mse_val=2.974e-01 pde_val=1.426e+00 state_rel=1.005e+00
+Poisson_Steady1D/HF_FNO epoch 0100/1200 mode=hybrid loss=7.450e-02/6.413e-02 test_loss=1.284e-01 mse_val=4.977e-02 pde_val=2.871e-01 state_rel=4.146e-01
+Poisson_Steady1D/HF_FNO epoch 0200/1200 mode=hybrid loss=1.990e-02/3.497e-02 test_loss=9.362e-02 mse_val=2.773e-02 pde_val=1.448e-01 state_rel=2.833e-01
+Poisson_Steady1D/HF_FNO epoch 0300/1200 mode=hybrid loss=1.039e-02/2.432e-02 test_loss=5.643e-02 mse_val=1.966e-02 pde_val=9.338e-02 state_rel=2.651e-01
+Poisson_Steady1D/HF_FNO epoch 0400/1200 mode=hybrid loss=3.579e-03/1.202e-02 test_loss=6.324e-02 mse_val=8.373e-03 pde_val=7.302e-02 state_rel=1.478e-01
+Poisson_Steady1D/HF_FNO epoch 0500/1200 mode=hybrid loss=3.144e-03/9.000e-03 test_loss=4.885e-02 mse_val=5.930e-03 pde_val=6.139e-02 state_rel=1.312e-01
+Poisson_Steady1D/HF_FNO epoch 0600/1200 mode=hybrid loss=2.764e-03/7.431e-03 test_loss=4.731e-02 mse_val=4.785e-03 pde_val=5.291e-02 state_rel=1.114e-01
+Poisson_Steady1D/HF_FNO epoch 0700/1200 mode=hybrid loss=1.697e-03/6.163e-03 test_loss=4.038e-02 mse_val=3.800e-03 pde_val=4.727e-02 state_rel=1.005e-01
+Poisson_Steady1D/HF_FNO epoch 0800/1200 mode=hybrid loss=1.445e-03/5.544e-03 test_loss=3.706e-02 mse_val=3.368e-03 pde_val=4.353e-02 state_rel=9.427e-02
+Poisson_Steady1D/HF_FNO epoch 0900/1200 mode=hybrid loss=1.288e-03/5.180e-03 test_loss=3.501e-02 mse_val=3.103e-03 pde_val=4.154e-02 state_rel=9.052e-02
+Poisson_Steady1D/HF_FNO epoch 1000/1200 mode=hybrid loss=1.212e-03/4.877e-03 test_loss=3.292e-02 mse_val=2.879e-03 pde_val=3.997e-02 state_rel=8.737e-02
+Poisson_Steady1D/HF_FNO epoch 1100/1200 mode=hybrid loss=1.181e-03/4.745e-03 test_loss=3.170e-02 mse_val=2.787e-03 pde_val=3.916e-02 state_rel=8.661e-02
+Poisson_Steady1D/HF_FNO epoch 1200/1200 mode=hybrid loss=1.149e-03/4.661e-03 test_loss=3.106e-02 mse_val=2.729e-03 pde_val=3.864e-02 state_rel=8.589e-02
+Poisson_Steady1D/HF_CFNO epoch 0001/1200 mode=hybrid loss=3.559e-01/3.702e-01 test_loss=3.853e-01 mse_val=2.987e-01 pde_val=1.430e+00 state_rel=1.009e+00
+Poisson_Steady1D/HF_CFNO epoch 0100/1200 mode=hybrid loss=6.624e-02/6.174e-02 test_loss=1.360e-01 mse_val=5.572e-02 pde_val=1.205e-01 state_rel=4.434e-01
+Poisson_Steady1D/HF_CFNO epoch 0200/1200 mode=hybrid loss=2.103e-02/3.357e-02 test_loss=6.660e-02 mse_val=2.892e-02 pde_val=9.305e-02 state_rel=2.970e-01
+Poisson_Steady1D/HF_CFNO epoch 0300/1200 mode=hybrid loss=9.728e-03/3.250e-02 test_loss=6.606e-02 mse_val=2.771e-02 pde_val=9.575e-02 state_rel=2.813e-01
+Poisson_Steady1D/HF_CFNO epoch 0400/1200 mode=hybrid loss=3.940e-03/3.036e-02 test_loss=5.021e-02 mse_val=2.540e-02 pde_val=9.919e-02 state_rel=2.464e-01
+Poisson_Steady1D/HF_CFNO epoch 0500/1200 mode=hybrid loss=1.520e-03/2.746e-02 test_loss=3.922e-02 mse_val=2.295e-02 pde_val=9.018e-02 state_rel=2.248e-01
+Poisson_Steady1D/HF_CFNO epoch 0600/1200 mode=hybrid loss=1.055e-03/2.481e-02 test_loss=3.285e-02 mse_val=2.074e-02 pde_val=8.139e-02 state_rel=2.155e-01
+Poisson_Steady1D/HF_CFNO epoch 0700/1200 mode=hybrid loss=6.976e-04/2.363e-02 test_loss=2.977e-02 mse_val=1.987e-02 pde_val=7.524e-02 state_rel=2.061e-01
+Poisson_Steady1D/HF_CFNO epoch 0800/1200 mode=hybrid loss=5.725e-04/2.246e-02 test_loss=2.782e-02 mse_val=1.889e-02 pde_val=7.142e-02 state_rel=2.017e-01
+Poisson_Steady1D/HF_CFNO epoch 0900/1200 mode=hybrid loss=4.972e-04/2.166e-02 test_loss=2.644e-02 mse_val=1.822e-02 pde_val=6.875e-02 state_rel=1.996e-01
+Poisson_Steady1D/HF_CFNO epoch 1000/1200 mode=hybrid loss=4.473e-04/2.126e-02 test_loss=2.569e-02 mse_val=1.790e-02 pde_val=6.711e-02 state_rel=1.974e-01
+Poisson_Steady1D/HF_CFNO epoch 1100/1200 mode=hybrid loss=4.258e-04/2.101e-02 test_loss=2.515e-02 mse_val=1.771e-02 pde_val=6.606e-02 state_rel=1.956e-01
+Poisson_Steady1D/HF_CFNO epoch 1200/1200 mode=hybrid loss=4.086e-04/2.081e-02 test_loss=2.486e-02 mse_val=1.754e-02 pde_val=6.541e-02 state_rel=1.951e-01
+
+=== [2/15] Poisson_Steady2D on cuda ===

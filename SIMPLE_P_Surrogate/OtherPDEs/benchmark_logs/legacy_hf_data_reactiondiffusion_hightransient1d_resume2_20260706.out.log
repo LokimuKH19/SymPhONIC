@@ -1,0 +1,44 @@
+
+=== [1/1] ReactionDiffusion_HighNonlinear_Transient1D on cuda ===
+Skipping completed ReactionDiffusion_HighNonlinear_Transient1D/FNO
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 0001/1200 mode=data loss=2.629e-02/3.449e-02 mse_val=3.449e-02 pde_val=2.438e-01 state_rel=3.763e-01
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 0100/1200 mode=data loss=1.170e-03/3.427e-03 mse_val=3.427e-03 pde_val=1.291e-01 state_rel=1.185e-01
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 0200/1200 mode=data loss=3.588e-04/2.614e-03 mse_val=2.614e-03 pde_val=1.264e-01 state_rel=9.859e-02
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 0300/1200 mode=data loss=1.635e-04/2.207e-03 mse_val=2.207e-03 pde_val=1.175e-01 state_rel=8.878e-02
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 0400/1200 mode=data loss=1.046e-04/2.142e-03 mse_val=2.142e-03 pde_val=1.146e-01 state_rel=8.616e-02
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 0500/1200 mode=data loss=8.021e-05/2.071e-03 mse_val=2.071e-03 pde_val=1.111e-01 state_rel=8.420e-02
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 0600/1200 mode=data loss=6.604e-05/2.040e-03 mse_val=2.040e-03 pde_val=1.096e-01 state_rel=8.328e-02
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 0700/1200 mode=data loss=5.500e-05/2.021e-03 mse_val=2.021e-03 pde_val=1.090e-01 state_rel=8.256e-02
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 0800/1200 mode=data loss=4.931e-05/2.008e-03 mse_val=2.008e-03 pde_val=1.091e-01 state_rel=8.218e-02
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 0900/1200 mode=data loss=4.610e-05/1.998e-03 mse_val=1.998e-03 pde_val=1.091e-01 state_rel=8.196e-02
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 1000/1200 mode=data loss=4.390e-05/1.989e-03 mse_val=1.989e-03 pde_val=1.088e-01 state_rel=8.176e-02
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 1100/1200 mode=data loss=4.262e-05/1.987e-03 mse_val=1.987e-03 pde_val=1.086e-01 state_rel=8.170e-02
+ReactionDiffusion_HighNonlinear_Transient1D/CFNO epoch 1200/1200 mode=data loss=4.182e-05/1.986e-03 mse_val=1.986e-03 pde_val=1.085e-01 state_rel=8.169e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 0001/1200 mode=data loss=2.188e-02/3.285e-02 mse_val=3.285e-02 pde_val=2.051e-01 state_rel=3.662e-01
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 0100/1200 mode=data loss=4.090e-03/6.942e-03 mse_val=6.942e-03 pde_val=3.252e-01 state_rel=1.704e-01
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 0200/1200 mode=data loss=1.340e-03/2.982e-03 mse_val=2.982e-03 pde_val=3.081e-01 state_rel=1.117e-01
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 0300/1200 mode=data loss=6.762e-04/2.246e-03 mse_val=2.246e-03 pde_val=3.218e-01 state_rel=9.620e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 0400/1200 mode=data loss=4.381e-04/2.042e-03 mse_val=2.042e-03 pde_val=3.159e-01 state_rel=9.073e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 0500/1200 mode=data loss=3.239e-04/1.917e-03 mse_val=1.917e-03 pde_val=3.098e-01 state_rel=8.688e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 0600/1200 mode=data loss=2.648e-04/1.916e-03 mse_val=1.916e-03 pde_val=3.099e-01 state_rel=8.612e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 0700/1200 mode=data loss=2.267e-04/1.851e-03 mse_val=1.851e-03 pde_val=3.064e-01 state_rel=8.434e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 0800/1200 mode=data loss=2.015e-04/1.785e-03 mse_val=1.785e-03 pde_val=3.030e-01 state_rel=8.256e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 0900/1200 mode=data loss=1.861e-04/1.748e-03 mse_val=1.748e-03 pde_val=3.000e-01 state_rel=8.158e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 1000/1200 mode=data loss=1.768e-04/1.730e-03 mse_val=1.730e-03 pde_val=2.983e-01 state_rel=8.108e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 1100/1200 mode=data loss=1.713e-04/1.712e-03 mse_val=1.712e-03 pde_val=2.969e-01 state_rel=8.063e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_FNO epoch 1200/1200 mode=data loss=1.678e-04/1.702e-03 mse_val=1.702e-03 pde_val=2.957e-01 state_rel=8.037e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 0001/1200 mode=data loss=2.014e-02/3.157e-02 mse_val=3.157e-02 pde_val=2.105e-01 state_rel=3.582e-01
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 0100/1200 mode=data loss=3.571e-03/7.012e-03 mse_val=7.012e-03 pde_val=2.266e-01 state_rel=1.713e-01
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 0200/1200 mode=data loss=1.068e-03/3.629e-03 mse_val=3.629e-03 pde_val=1.828e-01 state_rel=1.228e-01
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 0300/1200 mode=data loss=5.377e-04/2.840e-03 mse_val=2.840e-03 pde_val=1.613e-01 state_rel=1.081e-01
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 0400/1200 mode=data loss=3.435e-04/2.584e-03 mse_val=2.584e-03 pde_val=1.610e-01 state_rel=1.026e-01
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 0500/1200 mode=data loss=2.467e-04/2.418e-03 mse_val=2.418e-03 pde_val=1.566e-01 state_rel=9.880e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 0600/1200 mode=data loss=1.916e-04/2.326e-03 mse_val=2.326e-03 pde_val=1.506e-01 state_rel=9.657e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 0700/1200 mode=data loss=1.583e-04/2.272e-03 mse_val=2.272e-03 pde_val=1.457e-01 state_rel=9.529e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 0800/1200 mode=data loss=1.371e-04/2.234e-03 mse_val=2.234e-03 pde_val=1.421e-01 state_rel=9.437e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 0900/1200 mode=data loss=1.244e-04/2.207e-03 mse_val=2.207e-03 pde_val=1.397e-01 state_rel=9.368e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 1000/1200 mode=data loss=1.165e-04/2.196e-03 mse_val=2.196e-03 pde_val=1.380e-01 state_rel=9.339e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 1100/1200 mode=data loss=1.119e-04/2.182e-03 mse_val=2.182e-03 pde_val=1.370e-01 state_rel=9.306e-02
+ReactionDiffusion_HighNonlinear_Transient1D/HF_CFNO epoch 1200/1200 mode=data loss=1.090e-04/2.176e-03 mse_val=2.176e-03 pde_val=1.363e-01 state_rel=9.288e-02
+
+Benchmark complete: D:\Ansys\SymPhONIC\OtherPDEs\LegacyHF_PDE_Benchmark_DataDriven_20260705
