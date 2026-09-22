@@ -1,0 +1,127 @@
+{
+  "spec": {
+    "pde": "KdV",
+    "case": "HighNonlinear_Steady2D",
+    "kind": "steady",
+    "dimension": 2,
+    "domain_x": 6.283185307179586,
+    "domain_y": 6.283185307179586,
+    "final_time": null,
+    "nx": 96,
+    "ny": 96,
+    "nt": null,
+    "input_channels": 4,
+    "modes": 12,
+    "high_modes": 24,
+    "depth": 4,
+    "target_params": 500000,
+    "batch_size": 16,
+    "lr": 0.001,
+    "params": {
+      "profile": "high_nonlinear",
+      "mode_min": 4,
+      "mode_max": 15,
+      "mode_count": 5,
+      "mode_min_2d": 3,
+      "mode_max_2d": 10,
+      "mode_count_2d": 5,
+      "mode_pair_count": 5,
+      "amp_scale": 0.8,
+      "amp_scale_2d": 0.7,
+      "transient_amp_scale": 0.68,
+      "omega_min": 0.8,
+      "omega_max": 1.8,
+      "nonlinear_coeff": 12.0,
+      "boundary_amplitude": 0.3
+    },
+    "reference_keys": [
+      "zk",
+      "pinn"
+    ]
+  },
+  "stability": {},
+  "width_matching": {
+    "FNO": {
+      "width": 21,
+      "params": 511458
+    },
+    "CFNO": {
+      "width": 17,
+      "params": 504302
+    },
+    "HF_FNO": {
+      "width": 5,
+      "params": 548638
+    },
+    "HF_CFNO": {
+      "width": 5,
+      "params": 563262
+    }
+  },
+  "data_shapes": {
+    "x_train": [
+      32,
+      4,
+      96,
+      96
+    ],
+    "y_train": [
+      32,
+      1,
+      96,
+      96
+    ],
+    "source_train": [
+      32,
+      1,
+      96,
+      96
+    ],
+    "x_val": [
+      8,
+      4,
+      96,
+      96
+    ],
+    "y_val": [
+      8,
+      1,
+      96,
+      96
+    ],
+    "source_val": [
+      8,
+      1,
+      96,
+      96
+    ],
+    "x_test": [
+      4,
+      4,
+      96,
+      96
+    ],
+    "y_test": [
+      4,
+      1,
+      96,
+      96
+    ],
+    "source_test": [
+      4,
+      1,
+      96,
+      96
+    ],
+    "source_normalization_mean": [
+      1
+    ],
+    "source_normalization_std": [
+      1
+    ]
+  },
+  "hard_constraints": "nonzero Dirichlet boundary lift plus masked interior correction; exact t=0 projection for transient cases",
+  "training_objective": "normalized PDE residual loss on interior collocation points; absolute PDE residual is recorded for diagnostics",
+  "bc_loss": "disabled/not used",
+  "profile": "high_nonlinear"
+}
