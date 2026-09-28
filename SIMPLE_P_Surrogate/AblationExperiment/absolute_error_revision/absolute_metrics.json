@@ -1,0 +1,966 @@
+{
+  "metric": "Mean of four per-function spatial RMSE values; no reference-field normalization. High-frequency RMSE uses an orthonormal FFT and divides retained squared coefficient error by 96*96 before square root.",
+  "reference": {
+    "rms_per_function": [
+      0.5690642224750018,
+      0.4188653697603959,
+      0.4722893456730733,
+      0.629876123312514
+    ],
+    "rms_mean": 0.5225237653052462,
+    "min": -2.008845806121826,
+    "max": 1.5331681966781616,
+    "units": "dimensionless manufactured solution"
+  },
+  "groups": {
+    "pde": {
+      "Core": {
+        "field_rmse": {
+          "mean": 1.1366718560585987,
+          "sd": 0.3387677440543735,
+          "values": [
+            1.9536884437757465,
+            1.2556939331171388,
+            1.0043566068683996,
+            0.6908584520028189,
+            1.2679801103012855,
+            1.1528721738059604,
+            0.8335217852938415,
+            0.997078266232567,
+            1.15049116171815,
+            1.0601776274700783
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.034963439073516275,
+          "sd": 0.014708623139377704,
+          "values": [
+            0.07199857441454845,
+            0.042507392762022304,
+            0.02655018081946334,
+            0.0200847092834466,
+            0.036148199555164316,
+            0.03850743129327952,
+            0.02354096037506782,
+            0.028485182842117193,
+            0.0327884859230014,
+            0.02902327346705187
+          ]
+        }
+      },
+      "Band": {
+        "field_rmse": {
+          "mean": 1.0246226760775052,
+          "sd": 0.35246230202113416,
+          "values": [
+            1.917732016911828,
+            1.0577945200353291,
+            0.9099414886273515,
+            0.5766786061969421,
+            1.101374256223793,
+            1.056464265465976,
+            0.7592843705710806,
+            0.8653139690050895,
+            1.0299368111208604,
+            0.9717064566168028
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.03234462582643356,
+          "sd": 0.014230244654943124,
+          "values": [
+            0.06960038724345959,
+            0.03649443383102743,
+            0.024260452199750315,
+            0.01971373102031564,
+            0.03228171438994535,
+            0.03544154674769222,
+            0.021735560102004177,
+            0.026198931114171875,
+            0.030883029152346437,
+            0.026836472463622623
+          ]
+        }
+      },
+      "Local": {
+        "field_rmse": {
+          "mean": 0.9589438301201273,
+          "sd": 0.23236919561988478,
+          "values": [
+            1.4158529993095819,
+            0.8978322503632173,
+            1.097504855337744,
+            0.5046294056056749,
+            0.8932657573638051,
+            1.019658774121756,
+            0.8057973524171109,
+            0.9237062798280412,
+            1.0817141314177503,
+            0.949476495436592
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.029427240479166117,
+          "sd": 0.008525847355636806,
+          "values": [
+            0.05169536007543768,
+            0.02864222673089311,
+            0.030910357916224568,
+            0.0200712231144125,
+            0.02539287227397438,
+            0.0305161880666288,
+            0.023848224267913616,
+            0.02548896518394625,
+            0.030125268743704026,
+            0.027581718418526167
+          ]
+        }
+      },
+      "HFB": {
+        "field_rmse": {
+          "mean": 0.9800638465686596,
+          "sd": 0.2344309155091499,
+          "values": [
+            1.401975526585434,
+            0.9306039296566079,
+            1.0228527513643881,
+            0.5101041403587474,
+            0.9395572237083105,
+            1.1111657220706566,
+            0.8491684697243679,
+            0.9112275439745959,
+            1.1986427612530615,
+            0.9253403969904268
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.030753084782164857,
+          "sd": 0.009157237463121512,
+          "values": [
+            0.05400501876521349,
+            0.030999087895523192,
+            0.028845443636766405,
+            0.019846938037179164,
+            0.02775175609741382,
+            0.03413364108561602,
+            0.025848991933500057,
+            0.02566245537207264,
+            0.0334146234235237,
+            0.027022891574840096
+          ]
+        }
+      },
+      "FNO12_matched": {
+        "field_rmse": {
+          "mean": 0.7286854380700563,
+          "sd": 0.07920502025907201,
+          "values": [
+            0.761838817129415,
+            0.7303497985125345,
+            0.5957172908781057,
+            0.6707917195802888,
+            0.8045028478438553,
+            0.833423401161635,
+            0.6405207540804572,
+            0.8210034012977131,
+            0.7355902154283234,
+            0.6931161347882349
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.02607107642566566,
+          "sd": 0.0013353884551676476,
+          "values": [
+            0.02684747813765575,
+            0.023968130652211705,
+            0.026937148812230305,
+            0.026183248781979033,
+            0.026247279726267957,
+            0.027958817783194857,
+            0.024431271850207346,
+            0.02706393278251993,
+            0.026636982785595592,
+            0.024436472944794153
+          ]
+        }
+      },
+      "FNO44_matched": {
+        "field_rmse": {
+          "mean": 0.5899883853187282,
+          "sd": 0.12566017452354714,
+          "values": [
+            0.45480925923787935,
+            0.7505184538029448,
+            0.5818820914981524,
+            0.5706255199091131,
+            0.6993779592875216,
+            0.647954297455392,
+            0.41408817754777527,
+            0.4269009801422931,
+            0.6073247840361333,
+            0.7464023302700775
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.03179147198004652,
+          "sd": 0.0026594485722674283,
+          "values": [
+            0.03764859209548187,
+            0.02882871575105195,
+            0.030240975156384912,
+            0.03409612213643404,
+            0.03269617191482421,
+            0.030554703600815625,
+            0.03333503009150775,
+            0.029802339334430425,
+            0.030508529680162724,
+            0.030203540039371667
+          ]
+        }
+      },
+      "HFS_Core": {
+        "field_rmse": {
+          "mean": 1.067236434968578,
+          "sd": 0.2677638372114265,
+          "values": [
+            1.6211993751584663,
+            1.2066076935265264,
+            1.2305814740220387,
+            0.6196324003605065,
+            0.9597284459421995,
+            1.1052126044592891,
+            1.1291432948643512,
+            0.8158719370637537,
+            1.0104610124428273,
+            0.9739261118458221
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.03356192037504607,
+          "sd": 0.010012624709872677,
+          "values": [
+            0.05824316595964193,
+            0.037309510164475236,
+            0.037551544403676265,
+            0.023949437034225918,
+            0.029214505177622304,
+            0.03385014609180288,
+            0.034220217651384666,
+            0.022948291768906993,
+            0.02930445038633498,
+            0.02902793511238955
+          ]
+        }
+      }
+    },
+    "hybrid": {
+      "Core": {
+        "field_rmse": {
+          "mean": 0.1313013816034429,
+          "sd": 0.013161325663392112,
+          "values": [
+            0.10828316838525967,
+            0.12399370980107378,
+            0.14607408154411344,
+            0.15021008440667524,
+            0.12835415285943025,
+            0.13328715722637896,
+            0.13211338732278502,
+            0.14618657836291934,
+            0.1231123858344684,
+            0.12139911029132475
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.013346564362757876,
+          "sd": 0.0009209265714877958,
+          "values": [
+            0.013005293881484066,
+            0.014810836377813686,
+            0.013056071980541269,
+            0.0151329653313266,
+            0.01249692145886976,
+            0.01313383115296008,
+            0.01341430625887479,
+            0.012933372351238656,
+            0.012282245647209337,
+            0.013199799187260507
+          ]
+        }
+      },
+      "Band": {
+        "field_rmse": {
+          "mean": 0.13091331774868756,
+          "sd": 0.01314715386047359,
+          "values": [
+            0.10830780352999463,
+            0.12437215076410552,
+            0.14593669513625834,
+            0.1494110347195474,
+            0.1291117770813523,
+            0.12848184611999938,
+            0.13144232199610564,
+            0.14750434277429558,
+            0.12190358635805425,
+            0.12266161900716245
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.013776196461324709,
+          "sd": 0.0008352229402443797,
+          "values": [
+            0.013850939251168957,
+            0.015428021964695993,
+            0.01352142709797769,
+            0.014665338409110735,
+            0.012536046712436338,
+            0.013632616639256953,
+            0.013790280985913932,
+            0.013634998079041324,
+            0.0127392953564265,
+            0.01396300011721868
+          ]
+        }
+      },
+      "Local": {
+        "field_rmse": {
+          "mean": 0.13592304258147836,
+          "sd": 0.012673855395541707,
+          "values": [
+            0.1258730340955242,
+            0.1430533194015363,
+            0.15825008627772305,
+            0.13702293689577955,
+            0.13931448539804248,
+            0.12355412579996705,
+            0.1314117691049695,
+            0.15317259402834252,
+            0.1208538571675409,
+            0.12672421764535804
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.013149553618933853,
+          "sd": 0.00046696309359009594,
+          "values": [
+            0.012869323417505586,
+            0.013548379104051836,
+            0.012989318202577347,
+            0.01274813334428717,
+            0.012367272036803573,
+            0.013344556278625498,
+            0.014071503654066037,
+            0.01332708908867782,
+            0.013069184243525801,
+            0.013160776819217873
+          ]
+        }
+      },
+      "HFB": {
+        "field_rmse": {
+          "mean": 0.13470868208758885,
+          "sd": 0.012494955356038378,
+          "values": [
+            0.12489805143618374,
+            0.14172084667446905,
+            0.1558726898591281,
+            0.13709226253135265,
+            0.1409353398499017,
+            0.12344730259305345,
+            0.1263982794629138,
+            0.15096413052975574,
+            0.11918284286344749,
+            0.126575075075683
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.013527012321448909,
+          "sd": 0.0004468157598946313,
+          "values": [
+            0.013313174268117978,
+            0.014110756956180772,
+            0.013452188459201979,
+            0.013003707159096975,
+            0.01296182965886086,
+            0.013335852459697813,
+            0.014186614240088397,
+            0.014084639261712696,
+            0.013440723853320232,
+            0.013380636898211382
+          ]
+        }
+      },
+      "FNO12_matched": {
+        "field_rmse": {
+          "mean": 0.31903726033078034,
+          "sd": 0.0028342754481112528,
+          "values": [
+            0.32168518871815577,
+            0.31588565281411496,
+            0.3253508011309375,
+            0.3171490330590067,
+            0.31826554648440464,
+            0.3206957872797938,
+            0.3185462313152051,
+            0.31777785269709413,
+            0.31648881502822135,
+            0.3185276947808693
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.029190416649992612,
+          "sd": 0.0007723405419272191,
+          "values": [
+            0.029086302410345273,
+            0.03027756013761275,
+            0.028224342178810972,
+            0.02820485597031431,
+            0.03033045972187421,
+            0.02927342532729201,
+            0.028594334857081856,
+            0.029556574933576413,
+            0.028690834217692023,
+            0.029665476745326325
+          ]
+        }
+      },
+      "FNO44_matched": {
+        "field_rmse": {
+          "mean": 0.33352513527520106,
+          "sd": 0.007001966763411149,
+          "values": [
+            0.32551319446520444,
+            0.3345824286707894,
+            0.3453234746953462,
+            0.33932017378709756,
+            0.32664743856419753,
+            0.3380254571620196,
+            0.3329442094426579,
+            0.3395226219547762,
+            0.32838173986672264,
+            0.32499061414319896
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.03582103310086017,
+          "sd": 0.0024922045329671925,
+          "values": [
+            0.03225524425691989,
+            0.03581647050918718,
+            0.03853887659238018,
+            0.03620528423967605,
+            0.034599804499410344,
+            0.03950512484873791,
+            0.038347155951200654,
+            0.03641763169425011,
+            0.03264760170805676,
+            0.03387713670878266
+          ]
+        }
+      },
+      "HFS_Core": {
+        "field_rmse": {
+          "mean": 0.14661801430013308,
+          "sd": 0.012811560365577774,
+          "values": [
+            0.1373992226699233,
+            0.13802863239874485,
+            0.15319661782044308,
+            0.16517819316683716,
+            0.15380462098138983,
+            0.14238818713934726,
+            0.15212140590240938,
+            0.16334922743970434,
+            0.13368141714349063,
+            0.127032618339041
+          ]
+        },
+        "high_rmse": {
+          "mean": 0.013948619860509723,
+          "sd": 0.0007365259827665476,
+          "values": [
+            0.013028347264815072,
+            0.013553016445583776,
+            0.014254387608301793,
+            0.014066909007513503,
+            0.014003460599531347,
+            0.014611332176531423,
+            0.015401033976106747,
+            0.01376760524089942,
+            0.012859208573760087,
+            0.013940897712054054
+          ]
+        }
+      }
+    }
+  },
+  "pairs": {
+    "pde": {
+      "Core__Band": {
+        "field_rmse": {
+          "difference": 0.11204917998109336,
+          "bootstrap95": [
+            0.08566274534154816,
+            0.1399012761195516
+          ],
+          "wins": 10,
+          "relative_reduction_percent": 9.857654113969456
+        },
+        "high_rmse": {
+          "difference": 0.002618813247082716,
+          "bootstrap95": [
+            0.0018162077068413895,
+            0.003555682034174064
+          ],
+          "wins": 10,
+          "relative_reduction_percent": 7.490147755706284
+        }
+      },
+      "Core__Local": {
+        "field_rmse": {
+          "difference": 0.17772802593847128,
+          "bootstrap95": [
+            0.0703301765564992,
+            0.2931482032778291
+          ],
+          "wins": 9,
+          "relative_reduction_percent": 15.635825325590622
+        },
+        "high_rmse": {
+          "difference": 0.005536198594350171,
+          "bootstrap95": [
+            0.0013291929272500817,
+            0.010166387518430235
+          ],
+          "wins": 8,
+          "relative_reduction_percent": 15.83425069458816
+        }
+      },
+      "Core__HFB": {
+        "field_rmse": {
+          "difference": 0.156608009489939,
+          "bootstrap95": [
+            0.049953198196747046,
+            0.2760410900093433
+          ],
+          "wins": 7,
+          "relative_reduction_percent": 13.777767845240415
+        },
+        "high_rmse": {
+          "difference": 0.004210354291351422,
+          "bootstrap95": [
+            0.0006302746387428813,
+            0.008328584471075819
+          ],
+          "wins": 7,
+          "relative_reduction_percent": 12.042162907654674
+        }
+      },
+      "Local__HFB": {
+        "field_rmse": {
+          "difference": -0.021120016448532286,
+          "bootstrap95": [
+            -0.05483764635187035,
+            0.011394625286264505
+          ],
+          "wins": 4,
+          "relative_reduction_percent": -2.202424770373321
+        },
+        "high_rmse": {
+          "difference": -0.0013258443029987494,
+          "bootstrap95": [
+            -0.0023737451140740085,
+            -0.00018865890065364327
+          ],
+          "wins": 3,
+          "relative_reduction_percent": -4.505499942943719
+        }
+      },
+      "Band__HFB": {
+        "field_rmse": {
+          "difference": 0.044558829508845633,
+          "bootstrap95": [
+            -0.05845272727538451,
+            0.17011732908190816
+          ],
+          "wins": 5,
+          "relative_reduction_percent": 4.348803764467442
+        },
+        "high_rmse": {
+          "difference": 0.0015915410442687062,
+          "bootstrap95": [
+            -0.0015006155788976456,
+            0.0053939273605940075
+          ],
+          "wins": 5,
+          "relative_reduction_percent": 4.920573367610338
+        }
+      },
+      "FNO12_matched__HFB": {
+        "field_rmse": {
+          "difference": -0.2513784084986034,
+          "bootstrap95": [
+            -0.3821242771060174,
+            -0.12080857440772083
+          ],
+          "wins": 1,
+          "relative_reduction_percent": -34.4975205164503
+        },
+        "high_rmse": {
+          "difference": -0.004682008356499195,
+          "bootstrap95": [
+            -0.010513867154916824,
+            -0.00023001759215578722
+          ],
+          "wins": 2,
+          "relative_reduction_percent": -17.958630783230703
+        }
+      },
+      "FNO44_matched__HFB": {
+        "field_rmse": {
+          "difference": -0.3900754612499314,
+          "bootstrap95": [
+            -0.5574444286796418,
+            -0.2298899677298724
+          ],
+          "wins": 1,
+          "relative_reduction_percent": -66.11578650640753
+        },
+        "high_rmse": {
+          "difference": 0.0010383871978816583,
+          "bootstrap95": [
+            -0.003968892524601881,
+            0.0055928197513884365
+          ],
+          "wins": 6,
+          "relative_reduction_percent": 3.2662444775548303
+        }
+      },
+      "HFS_Core__HFB": {
+        "field_rmse": {
+          "difference": 0.08717258839991843,
+          "bootstrap95": [
+            -0.00812271763720697,
+            0.18004409430991838
+          ],
+          "wins": 7,
+          "relative_reduction_percent": 8.16806712586465
+        },
+        "high_rmse": {
+          "difference": 0.0028088355928812137,
+          "bootstrap95": [
+            0.0002204350316340799,
+            0.00537342696518461
+          ],
+          "wins": 7,
+          "relative_reduction_percent": 8.369114643897547
+        }
+      }
+    },
+    "hybrid": {
+      "Core__Band": {
+        "field_rmse": {
+          "difference": 0.00038806385475533835,
+          "bootstrap95": [
+            -0.0004975349021868165,
+            0.0015243339635080898
+          ],
+          "wins": 5,
+          "relative_reduction_percent": 0.2955519964956472
+        },
+        "high_rmse": {
+          "difference": -0.0004296320985668352,
+          "bootstrap95": [
+            -0.0006305537360435765,
+            -0.00017846037012153522
+          ],
+          "wins": 1,
+          "relative_reduction_percent": -3.2190463919364447
+        }
+      },
+      "Core__Local": {
+        "field_rmse": {
+          "difference": -0.00462166097803547,
+          "bootstrap95": [
+            -0.010876636852235838,
+            0.001960201844962342
+          ],
+          "wins": 4,
+          "relative_reduction_percent": -3.5198875454287464
+        },
+        "high_rmse": {
+          "difference": 0.00019701074382402103,
+          "bootstrap95": [
+            -0.0002949125921031393,
+            0.000818801950033257
+          ],
+          "wins": 6,
+          "relative_reduction_percent": 1.4761157888224725
+        }
+      },
+      "Core__HFB": {
+        "field_rmse": {
+          "difference": -0.003407300484145985,
+          "bootstrap95": [
+            -0.00975319924366364,
+            0.0031578957631922997
+          ],
+          "wins": 4,
+          "relative_reduction_percent": -2.5950225675741128
+        },
+        "high_rmse": {
+          "difference": -0.00018044795869103322,
+          "bootstrap95": [
+            -0.0006785384104079413,
+            0.00045123570456361397
+          ],
+          "wins": 2,
+          "relative_reduction_percent": -1.35201804589167
+        }
+      },
+      "Local__HFB": {
+        "field_rmse": {
+          "difference": 0.0012143604938894853,
+          "bootstrap95": [
+            0.0002278535398604949,
+            0.0023291492925926398
+          ],
+          "wins": 8,
+          "relative_reduction_percent": 0.8934176802005945
+        },
+        "high_rmse": {
+          "difference": -0.00037745870251505427,
+          "bootstrap95": [
+            -0.0005143947066869079,
+            -0.00023973966948201945
+          ],
+          "wins": 1,
+          "relative_reduction_percent": -2.870505824407287
+        }
+      },
+      "Band__HFB": {
+        "field_rmse": {
+          "difference": -0.0037953643389013235,
+          "bootstrap95": [
+            -0.009635966449489197,
+            0.002136846445870325
+          ],
+          "wins": 4,
+          "relative_reduction_percent": -2.89914303920339
+        },
+        "high_rmse": {
+          "difference": 0.00024918413987580197,
+          "bootstrap95": [
+            -0.0001901429069501614,
+            0.0007303421772064983
+          ],
+          "wins": 6,
+          "relative_reduction_percent": 1.8088021652083666
+        }
+      },
+      "FNO12_matched__HFB": {
+        "field_rmse": {
+          "difference": 0.18432857824319146,
+          "bootstrap95": [
+            0.17723685997362162,
+            0.19131354176366408
+          ],
+          "wins": 10,
+          "relative_reduction_percent": 57.77650486719895
+        },
+        "high_rmse": {
+          "difference": 0.015663404328543705,
+          "bootstrap95": [
+            0.015182377681055357,
+            0.01617182886003098
+          ],
+          "wins": 10,
+          "relative_reduction_percent": 53.6594064975351
+        }
+      },
+      "FNO44_matched__HFB": {
+        "field_rmse": {
+          "difference": 0.19881645318761215,
+          "bootstrap95": [
+            0.19327272834924736,
+            0.20450688621628826
+          ],
+          "wins": 10,
+          "relative_reduction_percent": 59.61063564926317
+        },
+        "high_rmse": {
+          "difference": 0.022294020779411262,
+          "bootstrap95": [
+            0.020898723468192288,
+            0.023692623181406844
+          ],
+          "wins": 10,
+          "relative_reduction_percent": 62.23723563929237
+        }
+      },
+      "HFS_Core__HFB": {
+        "field_rmse": {
+          "difference": 0.011909332212544213,
+          "bootstrap95": [
+            0.005435242400715114,
+            0.018334424587260936
+          ],
+          "wins": 8,
+          "relative_reduction_percent": 8.122693701311038
+        },
+        "high_rmse": {
+          "difference": 0.00042160753906081373,
+          "bootstrap95": [
+            -3.106941968088999e-05,
+            0.0008600180731564631
+          ],
+          "wins": 6,
+          "relative_reduction_percent": 3.0225753033419287
+        }
+      }
+    }
+  },
+  "runs": 140,
+  "input_hashes": {
+    "KdV_Physics\\Core\\seed_20260924\\fields.npz": "2722c573242180dcb3f6ec0725fdc31b96ccddd1fceba4cc4eaeb3f8c48f4f50",
+    "KdV_Physics\\Core\\seed_20260925\\fields.npz": "5262c58985a46b6bf406ac352560aa59434e239cf1caa3791c543242414c7556",
+    "KdV_Physics\\Core\\seed_20260926\\fields.npz": "7620a4d3c590ac5898368f834e546134df346d4d115cf7979b23cf3786c656f4",
+    "KdV_Physics\\Core\\seed_20260927\\fields.npz": "87d82d7815db8e280dbd6d380ceddc1f75bbe7612687275ebf1d8d8bb4a86b26",
+    "KdV_Physics\\Core\\seed_20260928\\fields.npz": "5c2ed47a4ed0b641384ef3e0cb516b90bd140374a17378a0455593ebaf18d7b5",
+    "KdV_Physics\\Core\\seed_20260929\\fields.npz": "41d4058076b716dcecd1cc511850ff59165c9fd721a15f4eb3fbf106a9a3f1ce",
+    "KdV_Physics\\Core\\seed_20260930\\fields.npz": "d5a27783c82b9138d7ad49ff2b3d819d40e1b541db3741f9266593f76832db6f",
+    "KdV_Physics\\Core\\seed_20260931\\fields.npz": "f39fc1625a2a581b5b2a8544c070b636592bb09453735c0f7dfc70207007804e",
+    "KdV_Physics\\Core\\seed_20260932\\fields.npz": "da7b0b3e9362569dd7e27318c0e97947ea17c4f33d68fb6919e31ac35a5fcf63",
+    "KdV_Physics\\Core\\seed_20260933\\fields.npz": "67ec98ad10d2f189966dfc1425fdf0c1eda4a83b437dc0c9b796a2e9aa51f78f",
+    "KdV_Physics\\Band\\seed_20260924\\fields.npz": "64553a917bbf3c5310d14bd765056cc2b7c9e30cd81f10b5c1184e135f6282af",
+    "KdV_Physics\\Band\\seed_20260925\\fields.npz": "0323e72179c3aa08ac0def54f519b85b79905062066d2c62c6b89270a114a93d",
+    "KdV_Physics\\Band\\seed_20260926\\fields.npz": "6113d0478679117020c1d7431009aaf84f1ae97d04063c98279c2fb09df58e13",
+    "KdV_Physics\\Band\\seed_20260927\\fields.npz": "4690e4a84c6836581df82736c0bd8684279a634a8749178ed7d6133a31d52f41",
+    "KdV_Physics\\Band\\seed_20260928\\fields.npz": "44992886006b2aa43ad2042b92f414df98d2f391a521476ec0aa93b273d0430d",
+    "KdV_Physics\\Band\\seed_20260929\\fields.npz": "8279bc2bc776a65fd2fe0cd4df0db6b6812d7c3c6024408a1eef167db59549e8",
+    "KdV_Physics\\Band\\seed_20260930\\fields.npz": "202760b2267b6f5790f6419aa94b851fe4703f234586906b9d25f8eb1d0ebca1",
+    "KdV_Physics\\Band\\seed_20260931\\fields.npz": "f02187f7130a8b43e856ff4495c8465864e891862e9a29bedaa451d8806a3b2c",
+    "KdV_Physics\\Band\\seed_20260932\\fields.npz": "2bad260584000623e07bc817ffbc57d47cc7481502b50e731eeefa915646f67b",
+    "KdV_Physics\\Band\\seed_20260933\\fields.npz": "ffb9c2128e3d5103f46b541b8f7a74f45cf2862dfa1b0b26e14b8545bccb4c13",
+    "KdV_Physics\\Local\\seed_20260924\\fields.npz": "f7ca33cc882449a0ee3b702119aa1f19badf0335019b0395b627ded8774ada8f",
+    "KdV_Physics\\Local\\seed_20260925\\fields.npz": "f6570e4f78abb59b4d26bfc5bfbdf3d2b8480e3ed8e0c66cd12b6693fd6e5653",
+    "KdV_Physics\\Local\\seed_20260926\\fields.npz": "7e83b31c7d160af47c738475c8436f581232dc5735d2f5d183a46d1d324dd784",
+    "KdV_Physics\\Local\\seed_20260927\\fields.npz": "bcca71362c05cfdd21f7912619e2327bd2ac4aee39307e20b4491798e7ac29c4",
+    "KdV_Physics\\Local\\seed_20260928\\fields.npz": "57056905975c44214890d00e6fd6be6628a2a2c749541bdbdd8cca05feb2275a",
+    "KdV_Physics\\Local\\seed_20260929\\fields.npz": "24451df3e220071a7a7ae221218eb1c7096e4e5fa21cd8b4c0033d5a44a78c59",
+    "KdV_Physics\\Local\\seed_20260930\\fields.npz": "d7da21b995a3dbc8a875d0ff78beaa6d9b901c4e48f2cddd8afaf66b2dc5ce0f",
+    "KdV_Physics\\Local\\seed_20260931\\fields.npz": "371800343f07cd9c5fecf57a19f75de81b8ba6532403a277d0ff93e5dfb1bbc7",
+    "KdV_Physics\\Local\\seed_20260932\\fields.npz": "e495e1dfb4ed6e25153b5f1b14c130d4349abc87e4a4eb9969b6f9b7db2e6285",
+    "KdV_Physics\\Local\\seed_20260933\\fields.npz": "0c4fbfa208f09fec0f351fba3b7751854e1b0fc0b996bd8dc19f4fad811bfc37",
+    "KdV_Physics\\HFB\\seed_20260924\\fields.npz": "e3e83d985025dc87bbfddcf7fe0c609e055d50d09098ad32946f0a6cb02b8a7f",
+    "KdV_Physics\\HFB\\seed_20260925\\fields.npz": "d00dad649325aaacaf09f029ce47bcabe0e8e4bf59d787a2fd3f5cb89f76f38c",
+    "KdV_Physics\\HFB\\seed_20260926\\fields.npz": "9b0a2efc0f06eebe6b1329efe4743508ac6d2b9105d90ce3f8ee9fe6567cb351",
+    "KdV_Physics\\HFB\\seed_20260927\\fields.npz": "64ab61108a6c6b04918ff69726e20d9045b82e8a4764a6ad499e56f666837e8e",
+    "KdV_Physics\\HFB\\seed_20260928\\fields.npz": "cf02c51c1499a57da9684632eb6cefc082f66e0f60a0d21cd7efcc1fe6a826bb",
+    "KdV_Physics\\HFB\\seed_20260929\\fields.npz": "c05ef29797813cee53d543794efee8a92461a69cd82742c79b37c2749ab9d2ea",
+    "KdV_Physics\\HFB\\seed_20260930\\fields.npz": "22f27c978003f86d720ff2a91ca57d95210cb969c476fa18d2ff2cff01bfb249",
+    "KdV_Physics\\HFB\\seed_20260931\\fields.npz": "f03e87d7630fd30131c75c88017017f8d8e8725f93df9a32f71e68e5c6d79b4e",
+    "KdV_Physics\\HFB\\seed_20260932\\fields.npz": "6071797c89cfd1cf038329d11009a9ba875a2799a3b5e45db4b414dcc18c8fe4",
+    "KdV_Physics\\HFB\\seed_20260933\\fields.npz": "d9d94b795fb5712fd0fc545e8cb5b1feed63ba4e03c83dfaa3177f17c0b02019",
+    "KdV_Physics\\FNO12_matched\\seed_20260924\\fields.npz": "ab09e9bd2eec829d6f3945cc8bba264748c1a173da5f3c6b2ec833ce6c3f48d9",
+    "KdV_Physics\\FNO12_matched\\seed_20260925\\fields.npz": "0f527398b1d6abed9fbb0deb5eb2773b481c8269e380ae78741eb6957759cc23",
+    "KdV_Physics\\FNO12_matched\\seed_20260926\\fields.npz": "558998493a0d9999ee391ffb7574ea2d0679ff952aa6586959276f84419db190",
+    "KdV_Physics\\FNO12_matched\\seed_20260927\\fields.npz": "00324d727d216ba24f03eb23ba14b513519ec0134f643240eb39e20c8fe04e15",
+    "KdV_Physics\\FNO12_matched\\seed_20260928\\fields.npz": "40ec5562f78e37aff2b03154332f9a1fc42be5f514bfe98ae0f5e2cab90775e9",
+    "KdV_Physics\\FNO12_matched\\seed_20260929\\fields.npz": "3325eb5729603de3cc4ff95cd949016c9f7535ef75651c0d8ff138ad71f09339",
+    "KdV_Physics\\FNO12_matched\\seed_20260930\\fields.npz": "2dc3ab0e1315cf08b28b4e453f8f8bbcf09d20f0d02d6ab895f402cc6b27eaf3",
+    "KdV_Physics\\FNO12_matched\\seed_20260931\\fields.npz": "9afa1fcf5664c527cadb459fd8ea7b54ec252124f3c5c2ff0f11c7a7a1f32745",
+    "KdV_Physics\\FNO12_matched\\seed_20260932\\fields.npz": "6a7df3f131db6883715798a806f152d150b0dfbebad74eb9b9f2e8c223abc3df",
+    "KdV_Physics\\FNO12_matched\\seed_20260933\\fields.npz": "8e4f7793ade8166f64e86c2976cd4312e85379dbbf3302340db004a78904fb46",
+    "KdV_Physics\\FNO44_matched\\seed_20260924\\fields.npz": "1c8254579bd8f7b060b0b02ccd2a5dd2098e432a32b69418d86ce95043a4f39a",
+    "KdV_Physics\\FNO44_matched\\seed_20260925\\fields.npz": "6e7d126187ccbfa7ccd32b91aa2b1c5ef282eb46ba1adbe7b6d4a7de32e2e1bf",
+    "KdV_Physics\\FNO44_matched\\seed_20260926\\fields.npz": "5af256a926ab4a8d8fa0963ae531d21594e29a121acdac0d59ee6ea160569384",
+    "KdV_Physics\\FNO44_matched\\seed_20260927\\fields.npz": "f131983ba06a2c877a217fbc7a2552fa581d19a7fd071453018e1f1645b59302",
+    "KdV_Physics\\FNO44_matched\\seed_20260928\\fields.npz": "831b68628202ab11e9cdf36b29c072bb2df34b81dae9779613c70f435907a348",
+    "KdV_Physics\\FNO44_matched\\seed_20260929\\fields.npz": "28add4abaebd51f56706bf11b344d1d0aa1b0e45f28599c4528339eb6fc0ba65",
+    "KdV_Physics\\FNO44_matched\\seed_20260930\\fields.npz": "6b197c3a895bf1ada7e27bae6520eff3e2394ed442dfae023d249168cf559a54",
+    "KdV_Physics\\FNO44_matched\\seed_20260931\\fields.npz": "d26920dcd10559ead9e27293e7ed3682b9775ab2589fd203030c0549891fa427",
+    "KdV_Physics\\FNO44_matched\\seed_20260932\\fields.npz": "fff43bd51e7b2f6d1f9bf807df83e2d551d474f5277521eae4f4a38008ba6678",
+    "KdV_Physics\\FNO44_matched\\seed_20260933\\fields.npz": "3c61269cbb22ed587b7cafe774537d547bb08a84a33a53a2ee1ff0177a67d740",
+    "KdV_Physics\\HFS_Core\\seed_20260924\\fields.npz": "a4ef4806b91c056c2054698dc39699322d8c1eee9a3805eb4893de03923217bc",
+    "KdV_Physics\\HFS_Core\\seed_20260925\\fields.npz": "577d0c800cfc3b5de14e255c79de6fdf98e911e0226388cb492d980d34821f39",
+    "KdV_Physics\\HFS_Core\\seed_20260926\\fields.npz": "72b235e4f393f4a48e3d6f77679bd36235acc6948d4fc66e217bec24e943f618",
+    "KdV_Physics\\HFS_Core\\seed_20260927\\fields.npz": "11b8f632672406a5ab292fb94264700156d2ddc905cf3305e3ac1dff63822a11",
+    "KdV_Physics\\HFS_Core\\seed_20260928\\fields.npz": "82451c963f3fcc16bc88ada58cfd12cedae9eb2f60d15bb348ec700132b60a7f",
+    "KdV_Physics\\HFS_Core\\seed_20260929\\fields.npz": "e204ae10830f66121b47fafbf344cf573f025fe4c9f3247b660c16faf561502d",
+    "KdV_Physics\\HFS_Core\\seed_20260930\\fields.npz": "a2c7e9ed3220fb5fd4e7eac0f9ed684400ac31a807281e62e20c966ddb319cc4",
+    "KdV_Physics\\HFS_Core\\seed_20260931\\fields.npz": "1c2cb99bb8da429e923822e213f0f922f140e1d0afccfc226bc7eebd9e2f2a9a",
+    "KdV_Physics\\HFS_Core\\seed_20260932\\fields.npz": "fcb3efbfe3ccbb675393b65dd3567fb3abf9b09c7f51ff878450a3619f7a2e9e",
+    "KdV_Physics\\HFS_Core\\seed_20260933\\fields.npz": "cb999aebe7e7f21c04cf646fb614e13a1b47b5ccb9ce4d4dfd5e6acbff647ff1",
+    "KdV_Hybrid\\Core\\seed_20260924\\fields.npz": "6946d6be4c70b5662cda6c3fb708ab480376abd67431bb85678cb186869f1665",
+    "KdV_Hybrid\\Core\\seed_20260925\\fields.npz": "3369a37c5cca3523f6403e1a11b475ce5225ec9ee4507454e96522d44cf96acf",
+    "KdV_Hybrid\\Core\\seed_20260926\\fields.npz": "ef82ebfa712a81d296af2faec6d4e47e5439bd5f5f23c5b53e9e1aa36b69aa64",
+    "KdV_Hybrid\\Core\\seed_20260927\\fields.npz": "faa8f71504ec9468121fb9c10458808e64e1997ce3f1656cc76198fba2f21ffb",
+    "KdV_Hybrid\\Core\\seed_20260928\\fields.npz": "413e5a99a6bb13a557c919a8778d56f275236a2ef644b806fdabfafafdd67164",
+    "KdV_Hybrid\\Core\\seed_20260929\\fields.npz": "e3715a5d8abbc2a24cf66309199770c3b7057808e21c26041d43a4f8e285e53e",
+    "KdV_Hybrid\\Core\\seed_20260930\\fields.npz": "02e6d24cf7435dcddf75d775adfd7c91a8eeaff97347638d9e5851bb2930e433",
+    "KdV_Hybrid\\Core\\seed_20260931\\fields.npz": "1e6acee74b49750038ea313d316117341576a4a697e1e5fce50e50afd3062678",
+    "KdV_Hybrid\\Core\\seed_20260932\\fields.npz": "0dd9fae90a78b4838ad543428dcf804485b48f6b01aa8a3534642f3b33e17eb3",
+    "KdV_Hybrid\\Core\\seed_20260933\\fields.npz": "dad4b4bc64fa51a095908b5ea62ccd9af8a921a82228f55214fdb97b4ccc0d54",
+    "KdV_Hybrid\\Band\\seed_20260924\\fields.npz": "1ffc06e93f1a53a098c842c6aee25691873106ab5e7f7ae263e4a7be657ed4b9",
+    "KdV_Hybrid\\Band\\seed_20260925\\fields.npz": "fa0560682b11405340747e1d16ec8f3e49de59c1d2e8a0fb53a8cbdd0478f107",
+    "KdV_Hybrid\\Band\\seed_20260926\\fields.npz": "e60d6e78debbe8996301b2dbe18d2c5cdab84edba9532035cf6f6a46e731c3fc",
+    "KdV_Hybrid\\Band\\seed_20260927\\fields.npz": "a637631998b7635e96cec24ba712206f23cf1f50c22c9b4ee3d7c381f0f89e97",
+    "KdV_Hybrid\\Band\\seed_20260928\\fields.npz": "819261428d1efa5fa29f72e5c8c326b2f86c7aee876eae96e2499c09ec230f93",
+    "KdV_Hybrid\\Band\\seed_20260929\\fields.npz": "eeca181fb9128aaad1bc2e08f184e8a6713af03ab94a32bf3698dd826bdadf1a",
+    "KdV_Hybrid\\Band\\seed_20260930\\fields.npz": "d862ef5364a9da7d43cda04b79f1c177028b05f18845b6a8b36a45a5683d8837",
+    "KdV_Hybrid\\Band\\seed_20260931\\fields.npz": "f72ec58f45745fada5426b7322f73109c2caa1588cab123237155f864027ce87",
+    "KdV_Hybrid\\Band\\seed_20260932\\fields.npz": "e66de318dde4cb04903be7ece43c814f06eb9e8909904187a2ca2add530cf03d",
+    "KdV_Hybrid\\Band\\seed_20260933\\fields.npz": "b32fcd9c889806e970bee7312cf6f2966b637386f4d0a14812498c7c8f3e73f5",
+    "KdV_Hybrid\\Local\\seed_20260924\\fields.npz": "9ee14c70f547a0d3b8dec0bc54358f4205f177b7db4d6edd43e158edd89e6e9f",
+    "KdV_Hybrid\\Local\\seed_20260925\\fields.npz": "6cfee92e8849f048fecd7ba34bb2ad74aeaff2a98a62e49e3a554daf31c8202c",
+    "KdV_Hybrid\\Local\\seed_20260926\\fields.npz": "4629b4d74dcf380a132d7c4a5945274bda5f4a09f97d7fe60aa80954337cd71d",
+    "KdV_Hybrid\\Local\\seed_20260927\\fields.npz": "35529a02908f9be68fc60169d76d0dbb92c5f638ef71951d637df90450732f51",
+    "KdV_Hybrid\\Local\\seed_20260928\\fields.npz": "8b2666b594ebc6fe5f2ca8c167c2786192593c156246bb1b53fd8e0392e92c77",
+    "KdV_Hybrid\\Local\\seed_20260929\\fields.npz": "eac094024750d7f40e0bc328d9545cdd6debc6c077dbf9873804966aca48837a",
+    "KdV_Hybrid\\Local\\seed_20260930\\fields.npz": "f4be564a9e84b882ea1b36358f02b9462a646fe87b5df86f91e254b02c92c5b9",
+    "KdV_Hybrid\\Local\\seed_20260931\\fields.npz": "6a35210159f63819894b2aa200fa8aa606528b683136baefde8426e5f384c720",
+    "KdV_Hybrid\\Local\\seed_20260932\\fields.npz": "a84aa19bb439c0b9ebb09506edcb6b8a7545a9e0835bf112c07cd846b54c2fe8",
+    "KdV_Hybrid\\Local\\seed_20260933\\fields.npz": "0a5a3f7dbd6f29b28c528d0e7716348eade7d9831e84501e151e2afe233de6ec",
+    "KdV_Hybrid\\HFB\\seed_20260924\\fields.npz": "93ff2be3da510a5e9287eb1f7b5faf6ae508a1a4bf5768e00201b392a9b8f08e",
+    "KdV_Hybrid\\HFB\\seed_20260925\\fields.npz": "3416e07ceec9bf2ed60eaa06f3f833367c6fbb2516f5c7045ad5756a7d6bdfd7",
+    "KdV_Hybrid\\HFB\\seed_20260926\\fields.npz": "32a195363c313ad07211bbc667831179f7ca51b35d972af3e8cd4e080eb59c5a",
+    "KdV_Hybrid\\HFB\\seed_20260927\\fields.npz": "a8729f95b0b89e5f5e39e184cfacaab4a720bc937b79a68fd8df1c4a1dd4049a",
+    "KdV_Hybrid\\HFB\\seed_20260928\\fields.npz": "fda9e97f6c98f1f981ab8280df6408482a666fe4aa92ef5eb62fc075fde1f253",
+    "KdV_Hybrid\\HFB\\seed_20260929\\fields.npz": "5f72560420e4b09b6aa38ac6add11d0c04f858fd07b9aad53e4da2abb3eb111d",
+    "KdV_Hybrid\\HFB\\seed_20260930\\fields.npz": "49b8cc28252f2d8e68c9410b990ac25e2fa7b2d484ce49866b5a4ac66ca06d9e",
+    "KdV_Hybrid\\HFB\\seed_20260931\\fields.npz": "388ddb826acf63082b58d101c2760eaea9e786ae57f2378980004f158b0cdc41",
+    "KdV_Hybrid\\HFB\\seed_20260932\\fields.npz": "b47c09e84118610b7be9453d1b7a343c4f44b0d8732398aed80487001ef7fee8",
+    "KdV_Hybrid\\HFB\\seed_20260933\\fields.npz": "e975a0d9baba6c712b07e19dcc4b05d2782fc1148046439ad47a71b42a908672",
+    "KdV_Hybrid\\FNO12_matched\\seed_20260924\\fields.npz": "8fcce40743af0fcc23f666f277a29db6736e5086a44c2ece41821ca369e42220",
+    "KdV_Hybrid\\FNO12_matched\\seed_20260925\\fields.npz": "25c0c4adc7f78686fd2e45048bbfa92841932c1c3258bb58451419f403c73878",
+    "KdV_Hybrid\\FNO12_matched\\seed_20260926\\fields.npz": "828e68db8b748da168f4efbbbc3bc2ec4208d24780ae85ebeff058b044dba288",
+    "KdV_Hybrid\\FNO12_matched\\seed_20260927\\fields.npz": "27e5df92b75da584d712469d7652ca41b8a405ba6455bd1e5630fb408365e3af",
+    "KdV_Hybrid\\FNO12_matched\\seed_20260928\\fields.npz": "0744fc12eb34c4a2bcef0e5cb037eb77aee57ffd86d0774016a5ccb9ac8daa37",
+    "KdV_Hybrid\\FNO12_matched\\seed_20260929\\fields.npz": "7838113f396254707bae38ad55657a83204888d3599dfa6491525257e5b87340",
+    "KdV_Hybrid\\FNO12_matched\\seed_20260930\\fields.npz": "3403b4c1708e1556557b462348e3eb3d2945405d96df74040c22b4e8402e9332",
+    "KdV_Hybrid\\FNO12_matched\\seed_20260931\\fields.npz": "9e6491292d7afe2f7c408d14e0d0b32c19c00cfa64be04e1e38e66bb84316c6b",
+    "KdV_Hybrid\\FNO12_matched\\seed_20260932\\fields.npz": "4155a20ffe2811e0171c26ad6d476abc040f293f00d66fed85021e8b7acdfd12",
+    "KdV_Hybrid\\FNO12_matched\\seed_20260933\\fields.npz": "e0a28a988e30e637d2ee5074ab4a8fef0765f777df053044be17bb88e90fed0b",
+    "KdV_Hybrid\\FNO44_matched\\seed_20260924\\fields.npz": "8264b2157a7b00f757f00ae39e34b2e736a44487955e7eb0bae7c703c2be5ebc",
+    "KdV_Hybrid\\FNO44_matched\\seed_20260925\\fields.npz": "44639c991691599ba85edf9b265ad769a6e4fa12d0de3dece7f6b52e17720441",
+    "KdV_Hybrid\\FNO44_matched\\seed_20260926\\fields.npz": "f918e93a6bff207c64b4b36f997b0f984feb5380e5e23fb0eb2067d03bbf759c",
+    "KdV_Hybrid\\FNO44_matched\\seed_20260927\\fields.npz": "8f4c0fbcf4dd5d037e2506a71dca81939936635ab3c8848cdf174b493402242d",
+    "KdV_Hybrid\\FNO44_matched\\seed_20260928\\fields.npz": "82a22f7e8dfa2cb6b5d5dcbedcedc7ae425c13fca54b4b89a5ca17e88e381afe",
+    "KdV_Hybrid\\FNO44_matched\\seed_20260929\\fields.npz": "b54d2f931db2e798eabb27e0f2d00cd9841a3ae56752edf6c1eefa9b95dbe412",
+    "KdV_Hybrid\\FNO44_matched\\seed_20260930\\fields.npz": "1b13f92df86d3a937cfd0e618c8d07e28710da3a1b2ecc7571cba029e1d143cf",
+    "KdV_Hybrid\\FNO44_matched\\seed_20260931\\fields.npz": "1be57d28c6c9618d9f379de88b8d80faa762d5972bd483dee5b55a01dbdbdc0e",
+    "KdV_Hybrid\\FNO44_matched\\seed_20260932\\fields.npz": "03572d90a132a973cf4d731b23cbd937ec6dc7ba7ebec1f3d41a8d639d1b1282",
+    "KdV_Hybrid\\FNO44_matched\\seed_20260933\\fields.npz": "97f3ae9d8c302e060ba3af0caccaebba42bc61a32a5143a047e83daad79642cc",
+    "KdV_Hybrid\\HFS_Core\\seed_20260924\\fields.npz": "e81c01c74e55db044fa3eeaec0d298eaf5fb78166458922b31ab26d2eced6e57",
+    "KdV_Hybrid\\HFS_Core\\seed_20260925\\fields.npz": "a7483b09f57aaac91b25cd83750e2f4e984be94b6ddb46adb1e6645b1d62eaff",
+    "KdV_Hybrid\\HFS_Core\\seed_20260926\\fields.npz": "131d402d77bfbdeeedccc86c44eed6a79bb37ad6dec7c703321fbeb488b01614",
+    "KdV_Hybrid\\HFS_Core\\seed_20260927\\fields.npz": "b4c75d12f2395a146d7810a932647400f7f7d332373b978e62c7dbf07115cec2",
+    "KdV_Hybrid\\HFS_Core\\seed_20260928\\fields.npz": "2eaa6fb8a3dcf660a1913d2efd2e4542860be0ba997a1aec9be674eebd1a00a5",
+    "KdV_Hybrid\\HFS_Core\\seed_20260929\\fields.npz": "265836e78c4b28686d936a6d18d84a2d55696d4efb1ad86dfcda5c3825b68e76",
+    "KdV_Hybrid\\HFS_Core\\seed_20260930\\fields.npz": "d34cd6ef1d7dd6e80ecd77193d2ac86b61df2f21465868dfc71ff91c80abcef0",
+    "KdV_Hybrid\\HFS_Core\\seed_20260931\\fields.npz": "59606c0f37f2a12c550458a07119e7bfb622ac401bb30eb1a76a4561223f7cac",
+    "KdV_Hybrid\\HFS_Core\\seed_20260932\\fields.npz": "6eee55a3cfa223ec32d86dc09e0b8924a23a9688835a529a1d3f884cc1371228",
+    "KdV_Hybrid\\HFS_Core\\seed_20260933\\fields.npz": "382641602c38c41878c241561bbc4d676b3a787581076b5e3062f7ea41a98e21"
+  }
+}
