@@ -1,5 +1,5 @@
 {
-  "root": "D:\\Ansys\\SymPhONIC\\OtherPDEs\\LegacyHF_PDE_Benchmark_UniqueNativeSteady1D_SqrtParams_Final_20260820",
+  "root": "D:\\Ansys\\SymPhONIC\\OtherPDEs\\LegacyHF_PDE_Benchmark_UniqueNativeSteady1D_SqrtParams_Final_20260820\\ParamScale_10K_Rerun",
   "models_completed": 108,
   "expected_models": 108,
   "cases_per_mode": 9,

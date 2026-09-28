@@ -1,70 +1,54 @@
-# Native Steady 1D Benchmark Summary
+# Native Steady-1D 10K-Parameter Rerun
 
-## Scope
+## Scope and completion
 
-- Dedicated program: `run_legacy_hf_pde_steady1d_suite.py`
-- Native tensor contract: `[B, C, N]`; no replicated auxiliary spatial dimension.
-- PDE cases per training mode: 9 (five baseline and four high-nonlinearity cases).
-- Models per case: FNO, CFNO, HF-FNO, and HF-CFNO.
+- Cases: Poisson/Steady1D; baseline and high-nonlinear KdV, Allen-Cahn, Burgers, and Reaction-Diffusion.
 - Training modes: PhysicsOnly, Hybrid, and DataOnly.
-- Every model was trained for 1200 epochs on CUDA.
-- Training/validation/test sample counts: 32/8/4.
-- Baseline and high-nonlinearity grids: 64 and 96 points.
-- The nominal native-1D budget is `round(sqrt(500000)) = 707` real parameters.
-- Actual counts are 705--719. For every matched pair, FNO is not smaller than HF-FNO and CFNO is not smaller than HF-CFNO.
+- Models: FNO, CFNO, HF-FNO, and HF-CFNO.
+- Training: 1200 epochs on CUDA for every model, with mode-specific validation checkpoint selection.
+- Data: 32 training, 8 validation, and 4 test functions. Baseline cases use 64 points; high-nonlinear cases use 96 points.
+- Parameter budget: 9,991--10,170 real parameters depending on case and model. The non-HF member is never smaller than its matched HF member.
+- Tensor contract: native `[B,C,N]`; no replicated auxiliary spatial dimension.
+- Constraints: signed Cauchy/Dirichlet data are passed explicitly and imposed by hard projections. No boundary loss is used.
 
-## Hard Constraints and Well-Posedness
+All 108 runs completed. There are 108 checkpoints, histories, metric files, and field archives. The plotting inventory verifies all 1,332 required files with zero missing; 2,296 PNG files are present including additional diagnostics.
 
-Poisson remains a two-point Dirichlet problem. Its output is projected as a linear endpoint lift plus `4 xi (1-xi) N_theta`, so both endpoint values are exact. The corresponding linear problem is unique.
+## Parameter-scale comparison
 
-The original nonlinear steady boundary-value formulations must not be treated as globally unique without an additional theorem or parameter restriction. This is especially important for steady Burgers: a source field alone does not determine the solution, and even a nonlinear two-point boundary-value problem can have multiple branches.
+The 10K models improve test relative L2 over the matched approximately 700-parameter models in 96 of 108 runs.
 
-For this benchmark, Burgers, Allen-Cahn, and reaction-diffusion were therefore defined as spatial Cauchy problems. Their signed left value and signed left slope are input channels, and the hard form is
+| Training mode | Improved runs | Total | Median 10K/700 error ratio |
+|---|---:|---:|---:|
+| PhysicsOnly | 30 | 36 | 0.63 |
+| Hybrid | 33 | 36 | 0.50 |
+| DataOnly | 33 | 36 | 0.49 |
 
-`u_theta(xi) = u(0) + L u_x(0) xi + xi^2 N_theta(xi)`.
+Capacity is useful, but its effect depends strongly on the training objective. The median test relative L2 is 1.86 for PhysicsOnly, 1.29 for Hybrid, and 1.26 for DataOnly; the corresponding median normalized PDE MSE values are 1.59, 2.26, and 5.04.
 
-For Burgers, `u' = q` and `q' = (a u q - f)/nu` form a smooth first-order initial-value system for `nu > 0`. The signed initial jet selects one local branch uniquely, and the manufactured global solution guarantees that this branch exists over the benchmark interval. KdV analogously receives its signed left value, slope, and curvature and uses an `xi^3` correction.
+## HFB ablation
 
-## Aggregate Results
+The table counts paired field-error wins of HF-FNO over FNO and HF-CFNO over CFNO.
 
-The table reports the median test relative L2 error over the nine cases in each mode. These errors show that the very small square-root parameter budget is challenging; the benchmark does not support a claim that every HFB model is uniformly superior.
-
-| Mode | FNO | CFNO | HF-FNO | HF-CFNO |
-|---|---:|---:|---:|---:|
-| PhysicsOnly | 3.24 | 3.79 | 5.47 | 2.73 |
-| Hybrid | 2.69 | 3.87 | 4.10 | 2.49 |
-| DataOnly | 2.79 | 2.86 | 2.92 | 2.28 |
-
-Paired test-relative-L2 comparisons:
-
-| Mode | HF-FNO better than FNO | HF-CFNO better than CFNO |
+| Training mode | Baseline wins | High-nonlinear wins |
 |---|---:|---:|
-| PhysicsOnly | 4/9 | 6/9 |
-| Hybrid | 4/9 | 5/9 |
-| DataOnly | 5/9 | 6/9 |
+| PhysicsOnly | 4/10 | 6/8 |
+| Hybrid | 6/10 | 8/8 |
+| DataOnly | 9/10 | 8/8 |
 
-HF-CFNO is the more consistent enhanced branch in these runs. Its geometric-mean relative-L2 ratio against CFNO is 0.66, 0.76, and 0.67 for PhysicsOnly, Hybrid, and DataOnly, respectively. HF-FNO is inconsistent: its corresponding ratios against FNO are 1.61, 1.59, and 1.47. The residual ranking does not always agree with the field-error ranking, so both plots and metrics should be inspected for each case.
+HFB is most consistent when data anchor the intended branch. In every high-nonlinear Hybrid and DataOnly pair, the HFB model has lower field error than its conventional counterpart. The advantage is less systematic under pure physics optimization, so HFB should be interpreted as a response to sparse-data spectral bias rather than a general repair of PINO training dynamics.
 
-## Figure Inventory
+## Interpretation
 
-The output hierarchy mirrors the figure types found in the three reference roots. It includes, as applicable:
+PhysicsOnly models can reduce the discretized PDE objective while retaining large field errors or selecting an undesirable optimization basin. Increasing capacity and enforcing complete signed hard constraints do not remove this behavior.
 
-- `prediction_exact_error.png` and `prediction_exact_error_line.png`
-- `residual_distribution.png`
-- `spectrum_analysis.png`
-- `frequency_component_abs_error.png`
-- normalized and unnormalized training convergence figures
-- separate objective, data, and physics convergence figures
-- case-level four-model convergence, spectral-error, and relative-L2 comparisons
-- PDE-level `frequency_component_error_comparison.png`
-- training-mode-level `global_test_rel_l2_heatmap.png`
+DataOnly training controls the sampled branch much better, especially with HFB, but produces the largest median PDE residual. This is consistent with insufficient derivative smoothness between supervised samples.
 
-The machine-readable `plot_manifest.json` verifies 1332 required reference-aligned files with zero missing files. Additional diagnostic variants bring the total to 2296 PNG files.
+Hybrid training gives the clearest compromise: data constrain branch selection while the PDE term improves local consistency. The high-nonlinear HFB pairs are uniformly better in field error, although their residuals and absolute-error distributions must still be checked rather than inferred from relative L2 alone.
 
-## Reproducibility Files
+## Files
 
-- `benchmark_config.json`: full setup, hard-constraint definitions, and parameter policy.
-- `global_comparison.csv` and `global_comparison.json`: all 108 model records.
-- `completion_report.json`: training and plotting completion status.
-- `plot_manifest.json`: required figure inventory and missing-file check.
-- Each model directory contains `best_checkpoint.pt`, `history.csv`, `metrics.json`, `sample_fields.npz`, and its complete figure set.
+- `global_comparison.csv`: all 108 10K-model records, including all-point mean/maximum field errors and PDE residuals.
+- `comparison_vs_707params.csv`: all 108 matched 10K-versus-approximately-700 comparisons.
+- `plot_manifest.json`: required-figure inventory; 1,332/1,332 present.
+- `completion_report.json`: training and post-processing completion status.
+- Every training-mode/case directory contains `RESULTS_10K.md` and all model/result/convergence/spectrum figures.
