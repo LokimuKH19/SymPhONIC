@@ -1,0 +1,32 @@
+[
+  {
+    "key": "fno",
+    "title": "Fourier Neural Operator for Parametric Partial Differential Equations",
+    "url": "https://arxiv.org/abs/2010.08895",
+    "used_for": "Operator-learning framing and source-to-solution Poisson/Burgers-style benchmarks."
+  },
+  {
+    "key": "pdebench",
+    "title": "PDEBench: An Extensive Benchmark for Scientific Machine Learning",
+    "url": "https://arxiv.org/abs/2210.07182",
+    "used_for": "PDE family selection: Burgers, wave, diffusion-reaction, Allen-Cahn-style transient PDEs."
+  },
+  {
+    "key": "deeponet_benchmarks",
+    "title": "Learning nonlinear operators via DeepONet based on the universal approximation theorem of operators",
+    "url": "https://www.nature.com/articles/s42256-021-00302-5",
+    "used_for": "Manufactured/analytic operator-learning examples with supervised exact fields."
+  },
+  {
+    "key": "pinn",
+    "title": "Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations",
+    "url": "https://www.sciencedirect.com/science/article/pii/S0021999118307125",
+    "used_for": "Canonical Burgers, Allen-Cahn and KdV PDE forms; this script uses hard constraints and no BC loss."
+  },
+  {
+    "key": "zk",
+    "title": "The Zakharov-Kuznetsov equation and multidimensional KdV-type waves",
+    "url": "https://doi.org/10.1016/0167-2789(74)90026-5",
+    "used_for": "The steady 2D KdV case is treated as a forced ZK/KdV-type equation."
+  }
+]

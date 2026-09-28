@@ -1,0 +1,65 @@
+{
+  "args": {
+    "output_root": "LegacyHF_PDE_Benchmark_PINO_20260705",
+    "epochs": 1200,
+    "grid": 64,
+    "train_samples": 32,
+    "val_samples": 8,
+    "test_samples": 4,
+    "batch_size": 16,
+    "lr": 0.001,
+    "modes": 8,
+    "high_modes": 16,
+    "depth": 4,
+    "target_params": 500000,
+    "seed": 20260705,
+    "variants": "FNO,CFNO,HF_FNO,HF_CFNO",
+    "pdes": "",
+    "profile": "baseline",
+    "append_existing_global": false,
+    "resume": false,
+    "cpu": false
+  },
+  "device": "cuda",
+  "torch": "2.3.0+cu121",
+  "references": [
+    {
+      "key": "fno",
+      "title": "Fourier Neural Operator for Parametric Partial Differential Equations",
+      "url": "https://arxiv.org/abs/2010.08895",
+      "used_for": "Operator-learning framing and source-to-solution Poisson/Burgers-style benchmarks."
+    },
+    {
+      "key": "pdebench",
+      "title": "PDEBench: An Extensive Benchmark for Scientific Machine Learning",
+      "url": "https://arxiv.org/abs/2210.07182",
+      "used_for": "PDE family selection: Burgers, wave, diffusion-reaction, Allen-Cahn-style transient PDEs."
+    },
+    {
+      "key": "deeponet_benchmarks",
+      "title": "Learning nonlinear operators via DeepONet based on the universal approximation theorem of operators",
+      "url": "https://www.nature.com/articles/s42256-021-00302-5",
+      "used_for": "Manufactured/analytic operator-learning examples with supervised exact fields."
+    },
+    {
+      "key": "pinn",
+      "title": "Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations",
+      "url": "https://www.sciencedirect.com/science/article/pii/S0021999118307125",
+      "used_for": "Canonical Burgers, Allen-Cahn and KdV PDE forms; this script uses hard constraints and no BC loss."
+    },
+    {
+      "key": "zk",
+      "title": "The Zakharov-Kuznetsov equation and multidimensional KdV-type waves",
+      "url": "https://doi.org/10.1016/0167-2789(74)90026-5",
+      "used_for": "The steady 2D KdV case is treated as a forced ZK/KdV-type equation."
+    }
+  ],
+  "notes": [
+    "HF branches use gate_mode='legacy'.",
+    "All local HF padding uses replicate, not circular.",
+    "Dirichlet boundaries and transient initial conditions are hard projected in the model output.",
+    "Training backpropagates normalized PDE residual loss only; absolute PDE residual loss is logged and plotted in the original equation scale.",
+    "Exact fields are used for evaluation and plotting, not supervision.",
+    "No boundary-condition loss is present."
+  ]
+}
