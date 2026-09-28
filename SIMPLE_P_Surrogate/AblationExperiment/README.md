@@ -11,7 +11,7 @@ Core retains the shared HFB architecture, including both low-frequency paths. Th
 ## Contents
 
 - `kdv_ablation.py`, `run_all.py`: architectures, dataset reconstruction, audit and training.
-- `KdV_Physics/`, `KdV_Hybrid/`: original protocols and per-seed metrics, training histories, and saved predictions/reference fields.
+- `KdV_Physics/`, `KdV_Hybrid/`: original protocols and per-seed metrics, training histories, and saved predictions/reference fields. (Need to be extracted from the corresponding zip files first)
 - `absolute_metrics.py`: field RMSE, high-frequency RMSE and paired bootstrap intervals from saved predictions.
 - `summarize.py`: original relative-error and timing summaries.
 - `plot_absolute_results.py`: RMSE panels and radial error spectra.
