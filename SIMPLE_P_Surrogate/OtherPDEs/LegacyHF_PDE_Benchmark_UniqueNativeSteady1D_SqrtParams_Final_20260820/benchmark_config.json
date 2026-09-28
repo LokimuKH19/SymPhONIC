@@ -1,0 +1,366 @@
+{
+  "program": "run_legacy_hf_pde_steady1d_suite.py",
+  "purpose": "Native [B,C,N] steady 1D operator benchmark; no replicated auxiliary dimension.",
+  "args": {
+    "output_root": "LegacyHF_PDE_Benchmark_UniqueNativeSteady1D_SqrtParams_Final_20260820",
+    "epochs": 1200,
+    "grid": 64,
+    "high_grid": 96,
+    "train_samples": 32,
+    "val_samples": 8,
+    "test_samples": 4,
+    "batch_size": 16,
+    "micro_batch_size": 8,
+    "lr": 0.001,
+    "modes": 8,
+    "high_modes": 16,
+    "high_profile_modes": 12,
+    "high_profile_high_modes": 24,
+    "depth": 1,
+    "reference_2d_params": 500000,
+    "target_params": 707,
+    "seed": 20260705,
+    "variants": "FNO,CFNO,HF_FNO,HF_CFNO",
+    "training_modes": "pde,hybrid,data",
+    "physics_weight": 0.05,
+    "local_activation": "gelu",
+    "log_interval": 300,
+    "cases": "",
+    "resume": true,
+    "validate_only": false,
+    "skip_plots": true,
+    "plots_only": false
+  },
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "torch": "2.3.0+cu121",
+  "cases": [
+    {
+      "pde": "Poisson",
+      "case": "Steady1D",
+      "profile": "baseline",
+      "domain_x": 1.0,
+      "nx": 64,
+      "modes": 8,
+      "high_modes": 16,
+      "depth": 1,
+      "target_params": 707,
+      "batch_size": 16,
+      "lr": 0.001,
+      "input_channels": 4,
+      "params": {}
+    },
+    {
+      "pde": "KdV",
+      "case": "Steady1D",
+      "profile": "baseline",
+      "domain_x": 6.283185307179586,
+      "nx": 64,
+      "modes": 8,
+      "high_modes": 16,
+      "depth": 1,
+      "target_params": 707,
+      "batch_size": 16,
+      "lr": 0.001,
+      "input_channels": 5,
+      "params": {
+        "nonlinear_coeff": 6.0
+      }
+    },
+    {
+      "pde": "AllenCahn",
+      "case": "Steady1D",
+      "profile": "baseline",
+      "domain_x": 1.0,
+      "nx": 64,
+      "modes": 8,
+      "high_modes": 16,
+      "depth": 1,
+      "target_params": 707,
+      "batch_size": 16,
+      "lr": 0.001,
+      "input_channels": 4,
+      "params": {
+        "epsilon": 0.03,
+        "reaction": 1.0
+      }
+    },
+    {
+      "pde": "Burgers",
+      "case": "Steady1D",
+      "profile": "baseline",
+      "domain_x": 1.0,
+      "nx": 64,
+      "modes": 8,
+      "high_modes": 16,
+      "depth": 1,
+      "target_params": 707,
+      "batch_size": 16,
+      "lr": 0.001,
+      "input_channels": 4,
+      "params": {
+        "nu": 0.01,
+        "convective_coeff": 1.0
+      }
+    },
+    {
+      "pde": "ReactionDiffusion",
+      "case": "Steady1D",
+      "profile": "baseline",
+      "domain_x": 1.0,
+      "nx": 64,
+      "modes": 8,
+      "high_modes": 16,
+      "depth": 1,
+      "target_params": 707,
+      "batch_size": 16,
+      "lr": 0.001,
+      "input_channels": 4,
+      "params": {
+        "diffusion": 0.01,
+        "rate": 1.0
+      }
+    },
+    {
+      "pde": "KdV",
+      "case": "HighNonlinear_Steady1D",
+      "profile": "high_nonlinear",
+      "domain_x": 6.283185307179586,
+      "nx": 96,
+      "modes": 12,
+      "high_modes": 24,
+      "depth": 1,
+      "target_params": 707,
+      "batch_size": 16,
+      "lr": 0.001,
+      "input_channels": 5,
+      "params": {
+        "mode_min": 4,
+        "mode_max": 15,
+        "mode_count": 5,
+        "amp_scale": 0.8,
+        "boundary_amplitude": 0.35,
+        "nonlinear_coeff": 12.0
+      }
+    },
+    {
+      "pde": "AllenCahn",
+      "case": "HighNonlinear_Steady1D",
+      "profile": "high_nonlinear",
+      "domain_x": 1.0,
+      "nx": 96,
+      "modes": 12,
+      "high_modes": 24,
+      "depth": 1,
+      "target_params": 707,
+      "batch_size": 16,
+      "lr": 0.001,
+      "input_channels": 4,
+      "params": {
+        "mode_min": 4,
+        "mode_max": 15,
+        "mode_count": 5,
+        "amp_scale": 0.8,
+        "boundary_amplitude": 0.25,
+        "epsilon": 0.015,
+        "reaction": 2.0
+      }
+    },
+    {
+      "pde": "Burgers",
+      "case": "HighNonlinear_Steady1D",
+      "profile": "high_nonlinear",
+      "domain_x": 1.0,
+      "nx": 96,
+      "modes": 12,
+      "high_modes": 24,
+      "depth": 1,
+      "target_params": 707,
+      "batch_size": 16,
+      "lr": 0.001,
+      "input_channels": 4,
+      "params": {
+        "mode_min": 4,
+        "mode_max": 15,
+        "mode_count": 5,
+        "amp_scale": 0.8,
+        "boundary_amplitude": 0.25,
+        "nu": 0.0025,
+        "convective_coeff": 2.0
+      }
+    },
+    {
+      "pde": "ReactionDiffusion",
+      "case": "HighNonlinear_Steady1D",
+      "profile": "high_nonlinear",
+      "domain_x": 1.0,
+      "nx": 96,
+      "modes": 12,
+      "high_modes": 24,
+      "depth": 1,
+      "target_params": 707,
+      "batch_size": 16,
+      "lr": 0.001,
+      "input_channels": 4,
+      "params": {
+        "mode_min": 4,
+        "mode_max": 15,
+        "mode_count": 5,
+        "amp_scale": 0.8,
+        "boundary_amplitude": 0.25,
+        "diffusion": 0.0025,
+        "rate": 4.0
+      }
+    }
+  ],
+  "training_modes": {
+    "pde": "pure physics",
+    "hybrid": "data plus physics",
+    "data": "data only"
+  },
+  "normalization": {
+    "source": "Training-source global mean/std; allowed in all modes.",
+    "coordinate": "x/domain_x in [0,1].",
+    "solution": "Fixed nondimensional shift=0 and scale=1, then explicit physical-unit denormalization before the hard projection.",
+    "purity": "No theoretical-solution statistics are used by pure-physics training."
+  },
+  "parameter_budget": {
+    "reference_2d_real_parameters": 500000,
+    "native_1d_target_real_parameters": 707,
+    "rule": "round(sqrt(reference_2d_real_parameters)) unless --target-params is explicit"
+  },
+  "frequency_branch_policy": "Use the one-sided real DFT equivalent of rFFT, learn only independent non-negative frequencies, force DC/Nyquist real, and recover negative frequencies by Hermitian conjugacy during synthesis.",
+  "hard_constraints_and_well_posedness": {
+    "Poisson_Steady1D": {
+      "problem_type": "two-point Dirichlet boundary-value problem",
+      "input_channels": [
+        "source",
+        "u_left",
+        "u_right",
+        "x/domain_x"
+      ],
+      "hard_constraint": "linear endpoint lift + 4*xi*(1-xi)*network_correction",
+      "uniqueness": "The difference of two solutions has zero second derivative and zero endpoint values, hence is identically zero."
+    },
+    "KdV_Steady1D": {
+      "problem_type": "third-order spatial Cauchy problem",
+      "input_channels": [
+        "source",
+        "u_left",
+        "domain_x*u_x_left",
+        "domain_x^2*u_xx_left",
+        "x/domain_x"
+      ],
+      "hard_constraint": "left quadratic Taylor jet + xi^3*network_correction",
+      "uniqueness": "The third-order ODE is a smooth first-order system after prescribing the signed left value, slope, and curvature; the manufactured global solution fixes its unique branch on the benchmark interval."
+    },
+    "AllenCahn_Steady1D": {
+      "problem_type": "second-order spatial Cauchy problem",
+      "input_channels": [
+        "source",
+        "u_left",
+        "domain_x*u_x_left",
+        "x/domain_x"
+      ],
+      "hard_constraint": "left linear Taylor jet + xi^2*network_correction",
+      "uniqueness": "The nonlinear second-order ODE is a smooth first-order system after prescribing the signed left value and slope; the manufactured global solution fixes its unique branch on the benchmark interval."
+    },
+    "Burgers_Steady1D": {
+      "problem_type": "second-order spatial Cauchy problem",
+      "input_channels": [
+        "source",
+        "u_left",
+        "domain_x*u_x_left",
+        "x/domain_x"
+      ],
+      "hard_constraint": "left linear Taylor jet + xi^2*network_correction",
+      "uniqueness": "The nonlinear second-order ODE is a smooth first-order system after prescribing the signed left value and slope; the manufactured global solution fixes its unique branch on the benchmark interval."
+    },
+    "ReactionDiffusion_Steady1D": {
+      "problem_type": "second-order spatial Cauchy problem",
+      "input_channels": [
+        "source",
+        "u_left",
+        "domain_x*u_x_left",
+        "x/domain_x"
+      ],
+      "hard_constraint": "left linear Taylor jet + xi^2*network_correction",
+      "uniqueness": "The nonlinear second-order ODE is a smooth first-order system after prescribing the signed left value and slope; the manufactured global solution fixes its unique branch on the benchmark interval."
+    },
+    "KdV_HighNonlinear_Steady1D": {
+      "problem_type": "third-order spatial Cauchy problem",
+      "input_channels": [
+        "source",
+        "u_left",
+        "domain_x*u_x_left",
+        "domain_x^2*u_xx_left",
+        "x/domain_x"
+      ],
+      "hard_constraint": "left quadratic Taylor jet + xi^3*network_correction",
+      "uniqueness": "The third-order ODE is a smooth first-order system after prescribing the signed left value, slope, and curvature; the manufactured global solution fixes its unique branch on the benchmark interval."
+    },
+    "AllenCahn_HighNonlinear_Steady1D": {
+      "problem_type": "second-order spatial Cauchy problem",
+      "input_channels": [
+        "source",
+        "u_left",
+        "domain_x*u_x_left",
+        "x/domain_x"
+      ],
+      "hard_constraint": "left linear Taylor jet + xi^2*network_correction",
+      "uniqueness": "The nonlinear second-order ODE is a smooth first-order system after prescribing the signed left value and slope; the manufactured global solution fixes its unique branch on the benchmark interval."
+    },
+    "Burgers_HighNonlinear_Steady1D": {
+      "problem_type": "second-order spatial Cauchy problem",
+      "input_channels": [
+        "source",
+        "u_left",
+        "domain_x*u_x_left",
+        "x/domain_x"
+      ],
+      "hard_constraint": "left linear Taylor jet + xi^2*network_correction",
+      "uniqueness": "The nonlinear second-order ODE is a smooth first-order system after prescribing the signed left value and slope; the manufactured global solution fixes its unique branch on the benchmark interval."
+    },
+    "ReactionDiffusion_HighNonlinear_Steady1D": {
+      "problem_type": "second-order spatial Cauchy problem",
+      "input_channels": [
+        "source",
+        "u_left",
+        "domain_x*u_x_left",
+        "x/domain_x"
+      ],
+      "hard_constraint": "left linear Taylor jet + xi^2*network_correction",
+      "uniqueness": "The nonlinear second-order ODE is a smooth first-order system after prescribing the signed left value and slope; the manufactured global solution fixes its unique branch on the benchmark interval."
+    }
+  },
+  "plotting": {
+    "font": "Times New Roman",
+    "axis_label_size": 12,
+    "legend_and_colorbar_size": 10.5,
+    "primary_palette": [
+      "#3c7fb1",
+      "#e64532",
+      "#44a05c",
+      "#b53289"
+    ],
+    "loss_normalization": "first-five all-loss maximum; case comparison uses largest model scale",
+    "absolute_loss_curves": true
+  },
+  "references": [
+    {
+      "title": "Fourier Neural Operator for Parametric Partial Differential Equations",
+      "url": "https://arxiv.org/abs/2010.08895",
+      "used_for": "Source-to-solution operator-learning formulation and FNO baseline."
+    },
+    {
+      "title": "PDEBench: An Extensive Benchmark for Scientific Machine Learning",
+      "url": "https://arxiv.org/abs/2210.07182",
+      "used_for": "Burgers, reaction-diffusion, and Allen-Cahn PDE families."
+    },
+    {
+      "title": "Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations",
+      "url": "https://www.sciencedirect.com/science/article/pii/S0021999118307125",
+      "used_for": "Canonical nonlinear PDE forms and physics-informed optimization context."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "root": "D:\\Ansys\\SymPhONIC\\OtherPDEs\\LegacyHF_PDE_Benchmark_UniqueNativeSteady1D_SqrtParams_Final_20260820",
+  "models_completed": 108,
+  "expected_models": 108,
+  "cases_per_mode": 9,
+  "training_modes": [
+    "pde",
+    "hybrid",
+    "data"
+  ],
+  "variants": [
+    "FNO",
+    "CFNO",
+    "HF_FNO",
+    "HF_CFNO"
+  ],
+  "native_tensor_contract": "[B,C,N]",
+  "legacy_roots_modified": false,
+  "plots_deferred": false,
+  "plots_rendered": 108,
+  "plot_inventory_verified": true
+}
