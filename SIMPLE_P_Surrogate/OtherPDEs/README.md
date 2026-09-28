@@ -13,7 +13,7 @@ The Chinese version of this guide is available in `Readme.md`.
 | Inspect the legacy FNO/CFNO/HF multi-PDE comparison | `LegacyHF_PDE_Benchmark_*_20260705/` |
 | Run the legacy steady-1D, steady-2D, and transient-1D benchmark | `run_legacy_hf_pde_suite.py` |
 | Run true native `[B,C,N]` steady-1D operators | `run_legacy_hf_pde_steady1d_suite.py` |
-| Inspect the native-1D 700-parameter and 10K-parameter ablations | `LegacyHF_PDE_Benchmark_UniqueNativeSteady1D_SqrtParams_Final_20260820/` |
+| Inspect the native-1D 700-parameter and 10K-parameter ablations (ALL 1D RESULTS IN THE PAPER ARE IN THIS FILEFOLDER) | `LegacyHF_PDE_Benchmark_UniqueNativeSteady1D_SqrtParams_Final_20260820/` |
 | Compare low- and high-frequency spectral attention | `KernelAttention_*_PDE_Comparison_20260718/` |
 | Inspect the inner-activation ablation of the local high-pass block | `LocalHighPassActivation_Ablation_Steady2D_20260726/` |
 | Redraw existing legacy figures without retraining | `redraw_legacy_pde_results.py` |
