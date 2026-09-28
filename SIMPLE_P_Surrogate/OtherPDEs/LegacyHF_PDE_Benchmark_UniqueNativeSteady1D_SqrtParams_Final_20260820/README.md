@@ -1,4 +1,4 @@
-# Native Steady-1D 10K-Parameter Rerun
+# Native Steady-1D 10K-Parameter Test
 
 ## Scope and completion
 
