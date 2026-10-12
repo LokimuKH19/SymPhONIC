@@ -1,0 +1,272 @@
+[
+  {
+    "pde": "AllenCahn",
+    "case": "HighNonlinear_Steady1D",
+    "winner": "CFNO",
+    "test_rel_l2": 0.9282205700874329,
+    "params": 565279,
+    "width": 18,
+    "best_epoch": 57,
+    "residual_rms": 3.9093642234802246
+  },
+  {
+    "pde": "AllenCahn",
+    "case": "HighNonlinear_Steady2D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.42464759945869446,
+    "params": 548638,
+    "width": 5,
+    "best_epoch": 455,
+    "residual_rms": 0.31055715680122375
+  },
+  {
+    "pde": "AllenCahn",
+    "case": "HighNonlinear_Transient1D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.09731046110391617,
+    "params": 548643,
+    "width": 5,
+    "best_epoch": 1164,
+    "residual_rms": 0.5714927911758423
+  },
+  {
+    "pde": "AllenCahn",
+    "case": "Steady1D",
+    "winner": "CFNO",
+    "test_rel_l2": 0.6707605123519897,
+    "params": 529389,
+    "width": 26,
+    "best_epoch": 8,
+    "residual_rms": 0.07144586741924286
+  },
+  {
+    "pde": "AllenCahn",
+    "case": "Steady2D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.038266878575086594,
+    "params": 491929,
+    "width": 7,
+    "best_epoch": 965,
+    "residual_rms": 0.007462022826075554
+  },
+  {
+    "pde": "AllenCahn",
+    "case": "Transient1D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.037215784192085266,
+    "params": 491936,
+    "width": 7,
+    "best_epoch": 889,
+    "residual_rms": 0.02537384256720543
+  },
+  {
+    "pde": "Burgers",
+    "case": "HighNonlinear_Steady1D",
+    "winner": "CFNO",
+    "test_rel_l2": 0.9762409329414368,
+    "params": 565279,
+    "width": 18,
+    "best_epoch": 8,
+    "residual_rms": 23.70415687561035
+  },
+  {
+    "pde": "Burgers",
+    "case": "HighNonlinear_Steady2D",
+    "winner": "CFNO",
+    "test_rel_l2": 0.9460495710372925,
+    "params": 565279,
+    "width": 18,
+    "best_epoch": 5,
+    "residual_rms": 7.717365741729736
+  },
+  {
+    "pde": "Burgers",
+    "case": "HighNonlinear_Transient1D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.15215681493282318,
+    "params": 548643,
+    "width": 5,
+    "best_epoch": 246,
+    "residual_rms": 4.367265701293945
+  },
+  {
+    "pde": "Burgers",
+    "case": "Steady1D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.4663549065589905,
+    "params": 478961,
+    "width": 7,
+    "best_epoch": 130,
+    "residual_rms": 1.5586597919464111
+  },
+  {
+    "pde": "Burgers",
+    "case": "Steady2D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.16362887620925903,
+    "params": 491929,
+    "width": 7,
+    "best_epoch": 1200,
+    "residual_rms": 0.0854426845908165
+  },
+  {
+    "pde": "Burgers",
+    "case": "Transient1D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.03018455021083355,
+    "params": 478968,
+    "width": 7,
+    "best_epoch": 1197,
+    "residual_rms": 0.17501693964004517
+  },
+  {
+    "pde": "KdV",
+    "case": "HighNonlinear_Steady1D",
+    "winner": "CFNO",
+    "test_rel_l2": 0.31448620557785034,
+    "params": 565279,
+    "width": 18,
+    "best_epoch": 77,
+    "residual_rms": 74.22286224365234
+  },
+  {
+    "pde": "KdV",
+    "case": "HighNonlinear_Steady2D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.2641550302505493,
+    "params": 548638,
+    "width": 5,
+    "best_epoch": 678,
+    "residual_rms": 42.70545196533203
+  },
+  {
+    "pde": "KdV",
+    "case": "HighNonlinear_Transient1D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.08855439722537994,
+    "params": 548643,
+    "width": 5,
+    "best_epoch": 1197,
+    "residual_rms": 53.13329315185547
+  },
+  {
+    "pde": "KdV",
+    "case": "Steady1D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.700771689414978,
+    "params": 491929,
+    "width": 7,
+    "best_epoch": 163,
+    "residual_rms": 1.1670992374420166
+  },
+  {
+    "pde": "KdV",
+    "case": "Steady2D",
+    "winner": "CFNO",
+    "test_rel_l2": 0.37870585918426514,
+    "params": 529389,
+    "width": 26,
+    "best_epoch": 1134,
+    "residual_rms": 0.26327356696128845
+  },
+  {
+    "pde": "KdV",
+    "case": "Transient1D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.07096932828426361,
+    "params": 478968,
+    "width": 7,
+    "best_epoch": 1199,
+    "residual_rms": 19.978593826293945
+  },
+  {
+    "pde": "Poisson",
+    "case": "Steady1D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.1594771444797516,
+    "params": 478961,
+    "width": 7,
+    "best_epoch": 1194,
+    "residual_rms": 112.66622924804688
+  },
+  {
+    "pde": "Poisson",
+    "case": "Steady2D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.010038230568170547,
+    "params": 491929,
+    "width": 7,
+    "best_epoch": 1198,
+    "residual_rms": 1.6523091793060303
+  },
+  {
+    "pde": "ReactionDiffusion",
+    "case": "HighNonlinear_Steady1D",
+    "winner": "FNO",
+    "test_rel_l2": 0.6511281132698059,
+    "params": 561239,
+    "width": 22,
+    "best_epoch": 66,
+    "residual_rms": 1.5444191694259644
+  },
+  {
+    "pde": "ReactionDiffusion",
+    "case": "HighNonlinear_Steady2D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.7006363868713379,
+    "params": 548638,
+    "width": 5,
+    "best_epoch": 107,
+    "residual_rms": 3.007652997970581
+  },
+  {
+    "pde": "ReactionDiffusion",
+    "case": "HighNonlinear_Transient1D",
+    "winner": "CFNO",
+    "test_rel_l2": 0.11736199259757996,
+    "params": 565297,
+    "width": 18,
+    "best_epoch": 1089,
+    "residual_rms": 0.6303596496582031
+  },
+  {
+    "pde": "ReactionDiffusion",
+    "case": "Steady1D",
+    "winner": "HF_FNO",
+    "test_rel_l2": 0.7096607089042664,
+    "params": 478961,
+    "width": 7,
+    "best_epoch": 93,
+    "residual_rms": 0.3558928072452545
+  },
+  {
+    "pde": "ReactionDiffusion",
+    "case": "Steady2D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.1199142262339592,
+    "params": 491929,
+    "width": 7,
+    "best_epoch": 1200,
+    "residual_rms": 0.02611864171922207
+  },
+  {
+    "pde": "ReactionDiffusion",
+    "case": "Transient1D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.011584125459194183,
+    "params": 491936,
+    "width": 7,
+    "best_epoch": 1195,
+    "residual_rms": 0.09079349040985107
+  },
+  {
+    "pde": "Wave",
+    "case": "Transient1D",
+    "winner": "HF_CFNO",
+    "test_rel_l2": 0.34447574615478516,
+    "params": 491943,
+    "width": 7,
+    "best_epoch": 1199,
+    "residual_rms": 70.18196868896484
+  }
+]
