@@ -1,0 +1,17 @@
+[
+  {
+    "title": "Fourier Neural Operator for Parametric Partial Differential Equations",
+    "url": "https://arxiv.org/abs/2010.08895",
+    "used_for": "Source-to-solution operator-learning formulation and FNO baseline."
+  },
+  {
+    "title": "PDEBench: An Extensive Benchmark for Scientific Machine Learning",
+    "url": "https://arxiv.org/abs/2210.07182",
+    "used_for": "Burgers, reaction-diffusion, and Allen-Cahn PDE families."
+  },
+  {
+    "title": "Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations",
+    "url": "https://www.sciencedirect.com/science/article/pii/S0021999118307125",
+    "used_for": "Canonical nonlinear PDE forms and physics-informed optimization context."
+  }
+]

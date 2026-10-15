@@ -1,0 +1,141 @@
+{
+  "design": {
+    "cases": [
+      "Poisson/Steady2D",
+      "Burgers/HighNonlinear_Steady2D"
+    ],
+    "models": [
+      "HF_FNO",
+      "HF_CFNO"
+    ],
+    "activations": [
+      "gelu",
+      "identity"
+    ],
+    "paired_seeds": [
+      20260726,
+      20260727,
+      20260728
+    ],
+    "epochs": 1000,
+    "grid": 64,
+    "training_mode": "hybrid",
+    "physics_weight": 0.05,
+    "controlled_difference": "Only LocalHighPassBlock2d inner activation changes; pointwise and all parameters remain active."
+  },
+  "group_statistics": [
+    {
+      "pde": "Burgers",
+      "case": "HighNonlinear_Steady2D",
+      "variant": "HF_CFNO",
+      "seeds": [
+        20260726
+      ],
+      "n": 1
+    },
+    {
+      "pde": "Burgers",
+      "case": "HighNonlinear_Steady2D",
+      "variant": "HF_FNO",
+      "seeds": [
+        20260726,
+        20260727,
+        20260728
+      ],
+      "n": 3,
+      "gelu_mean": 0.8176510135332743,
+      "gelu_std": 0.055522976359457965,
+      "identity_mean": 0.8004488746325175,
+      "identity_std": 0.0720169255571754,
+      "identity_minus_gelu_mean_percent": -2.2024081085483744,
+      "identity_minus_gelu_median_percent": -1.9799755991742107,
+      "mean_absolute_paired_change_percent": 2.2024081085483744,
+      "log_ratio_95ci_percent": [
+        -7.501602815274399,
+        3.365963095414637
+      ],
+      "paired_difference_p": 0.22432699340757617,
+      "equivalence_margin_percent": 5.0,
+      "equivalence_tost_p": 0.07745796199030047,
+      "equivalent_within_margin": false
+    },
+    {
+      "pde": "Poisson",
+      "case": "Steady2D",
+      "variant": "HF_CFNO",
+      "seeds": [
+        20260726,
+        20260727,
+        20260728
+      ],
+      "n": 3,
+      "gelu_mean": 0.00964757582793633,
+      "gelu_std": 0.0024053539514789645,
+      "identity_mean": 0.010118887759745121,
+      "identity_std": 0.0025469086531381933,
+      "identity_minus_gelu_mean_percent": 5.074449907419591,
+      "identity_minus_gelu_median_percent": 6.16587709829417,
+      "mean_absolute_paired_change_percent": 6.483798186337342,
+      "log_ratio_95ci_percent": [
+        -10.591136235893329,
+        23.145537310404983
+      ],
+      "paired_difference_p": 0.32508350609801817,
+      "equivalence_margin_percent": 5.0,
+      "equivalence_tost_p": 0.4936618958458511,
+      "equivalent_within_margin": false
+    },
+    {
+      "pde": "Poisson",
+      "case": "Steady2D",
+      "variant": "HF_FNO",
+      "seeds": [
+        20260726,
+        20260727,
+        20260728
+      ],
+      "n": 3,
+      "gelu_mean": 0.027487858509023983,
+      "gelu_std": 0.0016577329535858033,
+      "identity_mean": 0.028726593280831974,
+      "identity_std": 0.0017883997870913608,
+      "identity_minus_gelu_mean_percent": 4.5387637607559626,
+      "identity_minus_gelu_median_percent": 6.239230675166829,
+      "mean_absolute_paired_change_percent": 4.5387637607559626,
+      "log_ratio_95ci_percent": [
+        -3.5759965262031734,
+        13.257699824526537
+      ],
+      "paired_difference_p": 0.14268069759975976,
+      "equivalence_margin_percent": 5.0,
+      "equivalence_tost_p": 0.41160552930621536,
+      "equivalent_within_margin": false
+    }
+  ],
+  "aggregate_statistics": {
+    "n": 10,
+    "gelu_mean": 0.34719207054004075,
+    "gelu_std": 0.4259150241832324,
+    "identity_mean": 0.343037820328027,
+    "identity_std": 0.42047964505744934,
+    "identity_minus_gelu_mean_percent": 2.2776046529049854,
+    "identity_minus_gelu_median_percent": 0.6092794088506159,
+    "mean_absolute_paired_change_percent": 4.021854001709335,
+    "log_ratio_95ci_percent": [
+      -1.309274376562486,
+      5.770301857512505
+    ],
+    "paired_difference_p": 0.19460098686378913,
+    "equivalence_margin_percent": 5.0,
+    "equivalence_tost_p": 0.05397658968899456,
+    "equivalent_within_margin": false
+  },
+  "completion": {
+    "completed_runs": 20,
+    "expected_runs": 24,
+    "completed_pairs": 10,
+    "expected_pairs": 12,
+    "stopped_early": true
+  },
+  "conclusion": "No statistically significant inner-activation effect was observed in the completed paired runs; strict equivalence within the practical margin was not proven."
+}

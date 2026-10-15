@@ -1,0 +1,110 @@
+{
+  "spec": {
+    "pde": "Poisson",
+    "case": "Steady1D",
+    "kind": "steady",
+    "dimension": 1,
+    "domain_x": 1.0,
+    "domain_y": 1.0,
+    "final_time": null,
+    "nx": 64,
+    "ny": 16,
+    "nt": null,
+    "input_channels": 3,
+    "modes": 8,
+    "high_modes": 16,
+    "depth": 4,
+    "target_params": 500000,
+    "batch_size": 16,
+    "lr": 0.001,
+    "attention_rank": 8,
+    "attention_gate_init": -2.0,
+    "params": {},
+    "reference_keys": [
+      "fno"
+    ]
+  },
+  "stability": {},
+  "width_matching": {
+    "F_ATTN": {
+      "width": 22,
+      "params": 504918
+    },
+    "C_ATTN": {
+      "width": 24,
+      "params": 490038
+    },
+    "HF_ATTN": {
+      "width": 25,
+      "params": 492225
+    }
+  },
+  "data_shapes": {
+    "x_train": [
+      32,
+      3,
+      64,
+      16
+    ],
+    "y_train": [
+      32,
+      1,
+      64,
+      16
+    ],
+    "source_train": [
+      32,
+      1,
+      64,
+      16
+    ],
+    "x_val": [
+      8,
+      3,
+      64,
+      16
+    ],
+    "y_val": [
+      8,
+      1,
+      64,
+      16
+    ],
+    "source_val": [
+      8,
+      1,
+      64,
+      16
+    ],
+    "x_test": [
+      4,
+      3,
+      64,
+      16
+    ],
+    "y_test": [
+      4,
+      1,
+      64,
+      16
+    ],
+    "source_test": [
+      4,
+      1,
+      64,
+      16
+    ],
+    "source_normalization_mean": [
+      1
+    ],
+    "source_normalization_std": [
+      1
+    ]
+  },
+  "hard_constraints": "homogeneous Dirichlet boundary, plus exact t=0 projection for transient cases",
+  "training_objective": "data",
+  "physics_weight": 0.05,
+  "parameter_matching": "FNO >= HF_FNO and CFNO >= HF_CFNO when both family members are present",
+  "bc_loss": "disabled/not used",
+  "profile": "baseline"
+}

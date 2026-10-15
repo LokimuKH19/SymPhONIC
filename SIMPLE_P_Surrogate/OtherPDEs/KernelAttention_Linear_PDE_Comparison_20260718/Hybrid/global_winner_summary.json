@@ -1,0 +1,32 @@
+[
+  {
+    "pde": "Poisson",
+    "case": "Steady1D",
+    "winner": "C_ATTN",
+    "test_rel_l2": 0.4086039662361145,
+    "params": 490038,
+    "width": 24,
+    "best_epoch": 136,
+    "residual_rms": 26.841596603393555
+  },
+  {
+    "pde": "Poisson",
+    "case": "Steady2D",
+    "winner": "C_ATTN",
+    "test_rel_l2": 0.010297676548361778,
+    "params": 490038,
+    "width": 24,
+    "best_epoch": 1182,
+    "residual_rms": 0.7523018717765808
+  },
+  {
+    "pde": "Wave",
+    "case": "Transient1D",
+    "winner": "HF_ATTN",
+    "test_rel_l2": 0.0756009966135025,
+    "params": 492275,
+    "width": 25,
+    "best_epoch": 1193,
+    "residual_rms": 8.493023872375488
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "definition": "Case comparison curves use the largest first-five all-loss scale among the four models.",
+  "shared_case_scale": 31655815168.0,
+  "model_scales": {
+    "FNO": 28142219264.0,
+    "CFNO": 31655815168.0,
+    "HF_FNO": 27943450624.0,
+    "HF_CFNO": 30250395648.0
+  }
+}

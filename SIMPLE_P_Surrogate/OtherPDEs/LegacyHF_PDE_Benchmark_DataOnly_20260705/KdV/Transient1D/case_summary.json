@@ -1,0 +1,112 @@
+{
+  "spec": {
+    "pde": "KdV",
+    "case": "Transient1D",
+    "kind": "transient",
+    "dimension": 1,
+    "domain_x": 6.283185307179586,
+    "domain_y": 1.0,
+    "final_time": 0.01,
+    "nx": 64,
+    "ny": 64,
+    "nt": 64,
+    "input_channels": 4,
+    "modes": 8,
+    "high_modes": 16,
+    "depth": 4,
+    "target_params": 500000,
+    "batch_size": 16,
+    "lr": 0.001,
+    "params": {},
+    "reference_keys": [
+      "pinn"
+    ]
+  },
+  "stability": {
+    "criterion": "dt/dx^3 <= 0.25",
+    "value": 0.16000792520671095,
+    "satisfied": true
+  },
+  "width_matching": {
+    "FNO": {
+      "width": 31,
+      "params": 498268
+    },
+    "CFNO": {
+      "width": 25,
+      "params": 489558
+    },
+    "HF_FNO": {
+      "width": 7,
+      "params": 478968
+    },
+    "HF_CFNO": {
+      "width": 7,
+      "params": 491936
+    }
+  },
+  "data_shapes": {
+    "x_train": [
+      32,
+      4,
+      64,
+      64
+    ],
+    "y_train": [
+      32,
+      1,
+      64,
+      64
+    ],
+    "source_train": [
+      32,
+      1,
+      64,
+      64
+    ],
+    "x_val": [
+      8,
+      4,
+      64,
+      64
+    ],
+    "y_val": [
+      8,
+      1,
+      64,
+      64
+    ],
+    "source_val": [
+      8,
+      1,
+      64,
+      64
+    ],
+    "x_test": [
+      4,
+      4,
+      64,
+      64
+    ],
+    "y_test": [
+      4,
+      1,
+      64,
+      64
+    ],
+    "source_test": [
+      4,
+      1,
+      64,
+      64
+    ],
+    "source_normalization_mean": [
+      1
+    ],
+    "source_normalization_std": [
+      1
+    ]
+  },
+  "hard_constraints": "homogeneous Dirichlet boundary, plus exact t=0 projection for transient cases",
+  "bc_loss": "disabled/not used"
+}

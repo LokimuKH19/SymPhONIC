@@ -1,0 +1,42 @@
+[
+  {
+    "pde": "AllenCahn",
+    "case": "HighNonlinear_Transient1D",
+    "winner": "F_ATTN",
+    "test_rel_l2": 0.1781802773475647,
+    "params": 504962,
+    "width": 22,
+    "best_epoch": 310,
+    "residual_rms": 0.8331095576286316
+  },
+  {
+    "pde": "Burgers",
+    "case": "HighNonlinear_Transient1D",
+    "winner": "HF_ATTN",
+    "test_rel_l2": 0.15165355801582336,
+    "params": 492275,
+    "width": 25,
+    "best_epoch": 45,
+    "residual_rms": 0.8453612923622131
+  },
+  {
+    "pde": "KdV",
+    "case": "HighNonlinear_Transient1D",
+    "winner": "F_ATTN",
+    "test_rel_l2": 0.31722813844680786,
+    "params": 504962,
+    "width": 22,
+    "best_epoch": 414,
+    "residual_rms": 461.1034851074219
+  },
+  {
+    "pde": "ReactionDiffusion",
+    "case": "HighNonlinear_Transient1D",
+    "winner": "F_ATTN",
+    "test_rel_l2": 0.08485056459903717,
+    "params": 504962,
+    "width": 22,
+    "best_epoch": 481,
+    "residual_rms": 0.5556835532188416
+  }
+]

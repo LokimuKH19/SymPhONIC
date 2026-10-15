@@ -1,0 +1,133 @@
+{
+  "spec": {
+    "pde": "Burgers",
+    "case": "HighNonlinear_Transient1D",
+    "kind": "transient",
+    "dimension": 1,
+    "domain_x": 1.0,
+    "domain_y": 1.0,
+    "final_time": 0.3,
+    "nx": 64,
+    "ny": 64,
+    "nt": 64,
+    "input_channels": 5,
+    "modes": 8,
+    "high_modes": 16,
+    "depth": 4,
+    "target_params": 500000,
+    "batch_size": 16,
+    "lr": 0.001,
+    "attention_rank": 8,
+    "attention_gate_init": -2.0,
+    "params": {
+      "profile": "high_nonlinear",
+      "mode_min": 4,
+      "mode_max": 15,
+      "mode_count": 5,
+      "mode_min_2d": 3,
+      "mode_max_2d": 10,
+      "mode_count_2d": 5,
+      "mode_pair_count": 5,
+      "amp_scale": 0.8,
+      "amp_scale_2d": 0.7,
+      "transient_amp_scale": 0.68,
+      "omega_min": 1.0,
+      "omega_max": 2.0,
+      "nu": 0.0025,
+      "convective_coeff": 2.0,
+      "boundary_amplitude": 0.25
+    },
+    "reference_keys": [
+      "fno",
+      "pdebench",
+      "pinn"
+    ]
+  },
+  "stability": {
+    "criterion": "diffusion*dt/dx^2 <= 0.5",
+    "value": 0.04725,
+    "satisfied": true
+  },
+  "width_matching": {
+    "F_ATTN": {
+      "width": 22,
+      "params": 504962
+    },
+    "C_ATTN": {
+      "width": 24,
+      "params": 490086
+    },
+    "HF_ATTN": {
+      "width": 25,
+      "params": 492275
+    }
+  },
+  "data_shapes": {
+    "x_train": [
+      32,
+      5,
+      64,
+      64
+    ],
+    "y_train": [
+      32,
+      1,
+      64,
+      64
+    ],
+    "source_train": [
+      32,
+      1,
+      64,
+      64
+    ],
+    "x_val": [
+      8,
+      5,
+      64,
+      64
+    ],
+    "y_val": [
+      8,
+      1,
+      64,
+      64
+    ],
+    "source_val": [
+      8,
+      1,
+      64,
+      64
+    ],
+    "x_test": [
+      4,
+      5,
+      64,
+      64
+    ],
+    "y_test": [
+      4,
+      1,
+      64,
+      64
+    ],
+    "source_test": [
+      4,
+      1,
+      64,
+      64
+    ],
+    "source_normalization_mean": [
+      1
+    ],
+    "source_normalization_std": [
+      1
+    ]
+  },
+  "hard_constraints": "nonzero Dirichlet boundary lift plus masked interior correction; exact t=0 projection for transient cases",
+  "training_objective": "hybrid",
+  "physics_weight": 0.05,
+  "parameter_matching": "FNO >= HF_FNO and CFNO >= HF_CFNO when both family members are present",
+  "bc_loss": "disabled/not used",
+  "profile": "high_nonlinear"
+}

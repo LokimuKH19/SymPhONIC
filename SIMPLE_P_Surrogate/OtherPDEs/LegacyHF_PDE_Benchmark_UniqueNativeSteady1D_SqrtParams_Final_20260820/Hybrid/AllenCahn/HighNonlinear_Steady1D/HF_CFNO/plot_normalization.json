@@ -1,0 +1,8 @@
+{
+  "definition": "Largest absolute loss/MSE component among the first five epochs.",
+  "first_epochs_used": 5,
+  "model_first_five_scale": 34436927488.0,
+  "font": "Times New Roman",
+  "axis_label_size": 12,
+  "legend_size": 10.5
+}

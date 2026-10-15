@@ -1,0 +1,43 @@
+{
+  "spec": {
+    "pde": "Poisson",
+    "case": "Steady2D",
+    "kind": "steady",
+    "dimension": 2,
+    "domain_x": 1.0,
+    "domain_y": 1.0,
+    "final_time": null,
+    "nx": 64,
+    "ny": 64,
+    "nt": null,
+    "input_channels": 3,
+    "modes": 8,
+    "high_modes": 16,
+    "depth": 4,
+    "target_params": 500000,
+    "batch_size": 16,
+    "lr": 0.001,
+    "attention_rank": 8,
+    "attention_gate_init": -2.0,
+    "params": {},
+    "reference_keys": [
+      "fno"
+    ]
+  },
+  "data_seed": 20261735,
+  "width_matching": {
+    "HF_FNO": {
+      "width": 7,
+      "params": 478961
+    },
+    "HF_CFNO": {
+      "width": 7,
+      "params": 491929
+    }
+  },
+  "paired_seeds": [
+    20260726,
+    20260727,
+    20260728
+  ]
+}

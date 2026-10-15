@@ -1,0 +1,41 @@
+{
+  "args": {
+    "output_root": "D:\\Ansys\\SymPhONIC\\OtherPDEs\\LocalHighPassActivation_Ablation_Steady2D_20260726",
+    "epochs": 1000,
+    "grid": 64,
+    "train_samples": 32,
+    "val_samples": 8,
+    "test_samples": 4,
+    "batch_size": 16,
+    "lr": 0.001,
+    "modes": 8,
+    "high_modes": 16,
+    "target_params": 500000,
+    "seeds": [
+      20260726,
+      20260727,
+      20260728
+    ],
+    "training_mode": "hybrid",
+    "physics_weight": 0.05,
+    "equivalence_margin": 0.05,
+    "resume": true,
+    "cpu": false
+  },
+  "device": "cuda",
+  "torch": "2.3.0+cu121",
+  "cases": [
+    "Poisson_Steady2D",
+    "Burgers_HighNonlinear_Steady2D"
+  ],
+  "controlled_ablation": "local_activation=gelu versus identity; pointwise remains active",
+  "plot_style": {
+    "font": "Times New Roman",
+    "axis_label_size": 12,
+    "legend_and_colorbar_size": 10.5,
+    "colors": {
+      "gelu": "#3c7fb1",
+      "identity": "#e64532"
+    }
+  }
+}

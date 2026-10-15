@@ -1,0 +1,6 @@
+{
+  "reason": "Stopped at user request after sufficient evidence",
+  "completed_runs": 20,
+  "completed_pairs": 10,
+  "expected_runs": 24
+}

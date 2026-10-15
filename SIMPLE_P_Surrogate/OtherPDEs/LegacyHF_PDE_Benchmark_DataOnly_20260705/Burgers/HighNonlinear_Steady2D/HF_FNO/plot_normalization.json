@@ -1,0 +1,9 @@
+{
+  "normalization": "Every plotted loss component is divided by the largest absolute loss/MSE component in the first five epochs (or all available epochs when fewer than five).",
+  "first_epochs_used": 5,
+  "loss_columns": [
+    "train_mse",
+    "val_mse"
+  ],
+  "model_first_five_scale": 0.21784557402133942
+}

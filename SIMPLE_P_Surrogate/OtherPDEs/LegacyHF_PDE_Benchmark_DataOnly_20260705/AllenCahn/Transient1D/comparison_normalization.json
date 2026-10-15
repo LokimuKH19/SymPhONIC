@@ -1,0 +1,11 @@
+{
+  "normalization": "All plotted loss components are divided by the shared case scale.",
+  "first_epochs": 5,
+  "model_first_five_scales": {
+    "FNO": 0.015219364315271378,
+    "CFNO": 0.016005687415599823,
+    "HF_FNO": 0.016242755576968193,
+    "HF_CFNO": 0.016395973041653633
+  },
+  "shared_case_scale": 0.016395973041653633
+}

@@ -1,0 +1,124 @@
+{
+  "spec": {
+    "pde": "ReactionDiffusion",
+    "case": "HighNonlinear_Steady1D",
+    "profile": "high_nonlinear",
+    "domain_x": 1.0,
+    "nx": 96,
+    "modes": 12,
+    "high_modes": 24,
+    "depth": 1,
+    "target_params": 707,
+    "batch_size": 16,
+    "lr": 0.001,
+    "input_channels": 4,
+    "params": {
+      "mode_min": 4,
+      "mode_max": 15,
+      "mode_count": 5,
+      "amp_scale": 0.8,
+      "boundary_amplitude": 0.25,
+      "diffusion": 0.0025,
+      "rate": 4.0
+    }
+  },
+  "tensor_contract": "[B,C,N]",
+  "data_shapes": {
+    "x_train": [
+      32,
+      4,
+      96
+    ],
+    "y_train": [
+      32,
+      1,
+      96
+    ],
+    "source_train": [
+      32,
+      1,
+      96
+    ],
+    "x_val": [
+      8,
+      4,
+      96
+    ],
+    "y_val": [
+      8,
+      1,
+      96
+    ],
+    "source_val": [
+      8,
+      1,
+      96
+    ],
+    "x_test": [
+      4,
+      4,
+      96
+    ],
+    "y_test": [
+      4,
+      1,
+      96
+    ],
+    "source_test": [
+      4,
+      1,
+      96
+    ]
+  },
+  "normalization": {
+    "source_mean": 2.089481830596924,
+    "source_std": 3.5631601810455322,
+    "solution_shift": 0.0,
+    "solution_scale": 1.0
+  },
+  "width_matching": {
+    "FNO": {
+      "width": 5,
+      "head_hidden": 8,
+      "params": 712,
+      "matched_to": "HF_FNO"
+    },
+    "HF_FNO": {
+      "width": 2,
+      "head_hidden": 65,
+      "params": 712,
+      "matched_to": "FNO"
+    },
+    "CFNO": {
+      "width": 4,
+      "head_hidden": 9,
+      "params": 708,
+      "matched_to": "HF_CFNO"
+    },
+    "HF_CFNO": {
+      "width": 2,
+      "head_hidden": 49,
+      "params": 707,
+      "matched_to": "CFNO"
+    }
+  },
+  "parameter_matching": "Within 2% of the sqrt-scaled target, maximize usable trunk width while enforcing FNO >= HF_FNO and CFNO >= HF_CFNO.",
+  "well_posedness": {
+    "problem_type": "second-order spatial Cauchy problem",
+    "input_channels": [
+      "source",
+      "u_left",
+      "domain_x*u_x_left",
+      "x/domain_x"
+    ],
+    "hard_constraint": "left linear Taylor jet + xi^2*network_correction",
+    "uniqueness": "The nonlinear second-order ODE is a smooth first-order system after prescribing the signed left value and slope; the manufactured global solution fixes its unique branch on the benchmark interval."
+  },
+  "logical_batch_size": 16,
+  "micro_batch_size": 8,
+  "gradient_accumulation": "Micro-batches are weighted and accumulated before one logical-batch optimizer step.",
+  "training_mode": "pde",
+  "pure_physics_exact_solution_in_objective": false,
+  "hard_constraint": "left linear Taylor jet + xi^2*network_correction",
+  "bc_loss": "disabled/not used"
+}

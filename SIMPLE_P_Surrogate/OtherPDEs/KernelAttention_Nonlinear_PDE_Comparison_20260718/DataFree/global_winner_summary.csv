@@ -1,0 +1,5 @@
+pde,case,winner,test_rel_l2,params,width,best_epoch,residual_rms
+AllenCahn,HighNonlinear_Transient1D,F_ATTN,0.1981678009033203,504962,22,573,0.3218386173248291
+Burgers,HighNonlinear_Transient1D,F_ATTN,0.14991416037082672,504962,22,151,0.7014141082763672
+KdV,HighNonlinear_Transient1D,HF_ATTN,0.4247671365737915,492275,25,412,398.0194396972656
+ReactionDiffusion,HighNonlinear_Transient1D,C_ATTN,0.08212913572788239,490086,24,534,0.3058456480503082

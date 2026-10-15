@@ -1,0 +1,12 @@
+{
+  "reference_roots": [
+    "LegacyHF_PDE_Benchmark_PhysicsOnly_20260705",
+    "LegacyHF_PDE_Benchmark_DataOnly_20260705",
+    "LegacyHF_PDE_Benchmark_Hybrid_20260705"
+  ],
+  "definition": "Required names mirror the figure inventory in each corresponding reference training-mode root.",
+  "expected_plot_files": 1332,
+  "present_plot_files": 1332,
+  "missing_plot_files": [],
+  "all_required_plots_present": true
+}

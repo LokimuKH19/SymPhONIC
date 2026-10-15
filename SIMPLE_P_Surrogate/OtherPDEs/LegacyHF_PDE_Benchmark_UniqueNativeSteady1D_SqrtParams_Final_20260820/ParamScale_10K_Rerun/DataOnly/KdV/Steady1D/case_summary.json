@@ -1,0 +1,119 @@
+{
+  "spec": {
+    "pde": "KdV",
+    "case": "Steady1D",
+    "profile": "baseline",
+    "domain_x": 6.283185307179586,
+    "nx": 64,
+    "modes": 8,
+    "high_modes": 16,
+    "depth": 1,
+    "target_params": 10000,
+    "batch_size": 16,
+    "lr": 0.001,
+    "input_channels": 5,
+    "params": {
+      "nonlinear_coeff": 6.0
+    }
+  },
+  "tensor_contract": "[B,C,N]",
+  "data_shapes": {
+    "x_train": [
+      32,
+      5,
+      64
+    ],
+    "y_train": [
+      32,
+      1,
+      64
+    ],
+    "source_train": [
+      32,
+      1,
+      64
+    ],
+    "x_val": [
+      8,
+      5,
+      64
+    ],
+    "y_val": [
+      8,
+      1,
+      64
+    ],
+    "source_val": [
+      8,
+      1,
+      64
+    ],
+    "x_test": [
+      4,
+      5,
+      64
+    ],
+    "y_test": [
+      4,
+      1,
+      64
+    ],
+    "source_test": [
+      4,
+      1,
+      64
+    ]
+  },
+  "normalization": {
+    "source_mean": -0.026740824803709984,
+    "source_std": 8.796744346618652,
+    "solution_shift": 0.0,
+    "solution_scale": 1.0
+  },
+  "width_matching": {
+    "FNO": {
+      "width": 23,
+      "head_hidden": 34,
+      "params": 10005,
+      "matched_to": "HF_FNO"
+    },
+    "HF_FNO": {
+      "width": 11,
+      "head_hidden": 99,
+      "params": 10001,
+      "matched_to": "FNO"
+    },
+    "CFNO": {
+      "width": 19,
+      "head_hidden": 6,
+      "params": 10027,
+      "matched_to": "HF_CFNO"
+    },
+    "HF_CFNO": {
+      "width": 11,
+      "head_hidden": 7,
+      "params": 10027,
+      "matched_to": "CFNO"
+    }
+  },
+  "parameter_matching": "Within 2% of the sqrt-scaled target, maximize usable trunk width while enforcing FNO >= HF_FNO and CFNO >= HF_CFNO.",
+  "well_posedness": {
+    "problem_type": "third-order spatial Cauchy problem",
+    "input_channels": [
+      "source",
+      "u_left",
+      "domain_x*u_x_left",
+      "domain_x^2*u_xx_left",
+      "x/domain_x"
+    ],
+    "hard_constraint": "left quadratic Taylor jet + xi^3*network_correction",
+    "uniqueness": "The third-order ODE is a smooth first-order system after prescribing the signed left value, slope, and curvature; the manufactured global solution fixes its unique branch on the benchmark interval."
+  },
+  "logical_batch_size": 16,
+  "micro_batch_size": 8,
+  "gradient_accumulation": "Micro-batches are weighted and accumulated before one logical-batch optimizer step.",
+  "training_mode": "data",
+  "pure_physics_exact_solution_in_objective": null,
+  "hard_constraint": "left quadratic Taylor jet + xi^3*network_correction",
+  "bc_loss": "disabled/not used"
+}

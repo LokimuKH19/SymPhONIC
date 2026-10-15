@@ -1,0 +1,97 @@
+{
+  "test_pde_mse": 7.312915325164795,
+  "test_pde_mse_absolute": 191992.03125,
+  "test_mse": 2.689770221710205,
+  "test_rel_l2": 1.9680240154266357,
+  "abs_error": {
+    "mean": 1.4446972458002467,
+    "mean_abs": 1.4446972458002467,
+    "rms": 1.7551575879716252,
+    "p95_abs": 3.159276783466339,
+    "max_abs": 3.816121816635132
+  },
+  "signed_error": {
+    "mean": -0.7290312522090971,
+    "mean_abs": 1.4446972458002467,
+    "rms": 1.7551575879716252,
+    "p95_abs": 3.159276783466339,
+    "max_abs": 3.816121816635132
+  },
+  "residual_prediction": {
+    "mean": -57.383429527282715,
+    "mean_abs": 310.79603147506714,
+    "rms": 535.3925349625259,
+    "p95_abs": 942.6318206787109,
+    "max_abs": 2697.617431640625
+  },
+  "residual_exact": {
+    "mean": -0.6667419075965881,
+    "mean_abs": 23.957264920075733,
+    "rms": 37.7275684640321,
+    "p95_abs": 45.91304588317871,
+    "max_abs": 196.48489379882812
+  },
+  "high_pass_gate": {
+    "mean": 0.48740214109420776,
+    "min": 0.48740214109420776,
+    "max": 0.48740214109420776
+  },
+  "plotting_deferred_error": "deferred by --skip-plots",
+  "variant": "HF_CFNO",
+  "training_mode": "hybrid",
+  "width": 9,
+  "head_hidden": 51,
+  "params": 10167,
+  "best": {
+    "epoch": 1156,
+    "train_loss": 2.548015594482422,
+    "train_mse": 2.3826515078544617,
+    "train_pde_mse": 3.3072803616523743,
+    "train_pde_mse_absolute": 86828.78515625,
+    "train_state_rel_l2": 1.8400129675865173,
+    "val_loss": 5.698818206787109,
+    "val_mse": 5.285325050354004,
+    "val_pde_mse": 8.269867897033691,
+    "val_pde_mse_absolute": 217115.6875,
+    "val_state_rel_l2": 2.4260404109954834,
+    "test_loss": 3.0554161071777344,
+    "test_mse": 2.689770221710205,
+    "test_pde_mse": 7.312915325164795,
+    "test_pde_mse_absolute": 191992.03125,
+    "test_state_rel_l2": 1.9680240154266357,
+    "lr": 5.31479363398117e-05,
+    "selection_metric": "val_loss"
+  },
+  "final": {
+    "epoch": 1200,
+    "train_loss": 2.534094423055649,
+    "train_mse": 2.3703174591064453,
+    "train_pde_mse": 3.2755391001701355,
+    "train_pde_mse_absolute": 85995.443359375,
+    "train_state_rel_l2": 1.8361639380455017,
+    "val_loss": 5.763413429260254,
+    "val_mse": 5.346092224121094,
+    "val_pde_mse": 8.346419334411621,
+    "val_pde_mse_absolute": 219125.46875,
+    "val_state_rel_l2": 2.433551788330078,
+    "test_loss": 3.019899606704712,
+    "test_mse": 2.6530845165252686,
+    "test_pde_mse": 7.336299896240234,
+    "test_pde_mse_absolute": 192605.953125,
+    "test_state_rel_l2": 1.956610918045044,
+    "lr": 5e-05
+  },
+  "elapsed_s": 89.31851800000004,
+  "physics_weight": 0.05,
+  "tensor_contract": "[B,C,N]",
+  "native_dimension": 1,
+  "logical_batch_size": 16,
+  "micro_batch_size": 8,
+  "normalization": {
+    "source_mean": 0.08169877529144287,
+    "source_std": 162.0303192138672,
+    "solution_shift": 0.0,
+    "solution_scale": 1.0
+  },
+  "pure_physics_exact_solution_in_objective": null
+}
